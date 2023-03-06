@@ -13,13 +13,13 @@
 		{
 			"name": "dynamic",
 			"dependencies": {
-				 "bindbc-loader": "~>0.3.0"
+				 "bindbc-loader": "~>1.0.0"
 			}
 		},
 		{
 			"name": "dynamicBC",
 			"dependencies": {
-				"bindbc-loader": "~>0.3.0"
+				"bindbc-loader": "~>1.0.0"
 			},
 			"subConfigurations": {
 				"bindbc-loader": "yesBC"
