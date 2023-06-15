@@ -1,41 +1,38 @@
 {
 	"name": "bindbc-bgfx",
 	"description": "Dynamic and static D bindings for bgfx.",
-	"homepage": "https://github.com/GoaLitiuM/bindbc-bgfx",
-	"authors": [ "Ari Vuollet" ],
+	"authors": ["Aya Partridge", "Ari Vuollet"],
 	"license": "BSL-1.0",
-
+	
+	"dependencies": {"bindbc-common": "~>0.0.6"},
 	"targetType": "staticLibrary",
 	"targetPath": "lib",
 	"targetName": "BindBC_bgfx",
-
+	"dflags": ["-extern-std=c++11"],
+	
 	"configurations": [
 		{
 			"name": "dynamic",
-			"dependencies": {
-				 "bindbc-loader": "~>1.0.0"
-			}
+			"dependencies": {"bindbc-loader": "~>1.0.0"}
 		},
 		{
 			"name": "dynamicBC",
-			"dependencies": {
-				"bindbc-loader": "~>1.0.0"
-			},
+			"dependencies": {"bindbc-loader": "~>1.0.0"},
 			"subConfigurations": {
-				"bindbc-loader": "yesBC"
+				"bindbc-common": "yesBC",
+				"bindbc-loader": "yesBC",
 			},
-			"dflags": [ "-betterC" ]
+			"buildOptions": ["betterC"],
 		},
 		{
 			"name": "static",
-			"versions": [ "BindBgfx_Static" ],
-			"excludedSourceFiles": [ "source/bindbc/bgfx/dynload.d" ]
+			"versions": ["BindBgfx_Static"],
 		},
 		{
 			"name": "staticBC",
-			"dflags": [ "-betterC" ],
-			"versions": [ "BindBgfx_Static" ],
-			"excludedSourceFiles": [ "source/bindbc/bgfx/dynload.d" ]
+			"subConfigurations": {"bindbc-common": "yesBC"},
+			"buildOptions": ["betterC"],
+			"versions": ["BindBgfx_Static"],
 		}
 	]
 }
