@@ -4,11 +4,13 @@
 	"authors": ["Aya Partridge", "Ari Vuollet"],
 	"license": "BSL-1.0",
 	
-	"dependencies": {"bindbc-common": "~>0.0.6"},
+	"dependencies": {"bindbc-common": "~>0.0.99"},
 	"targetType": "staticLibrary",
 	"targetPath": "lib",
 	"targetName": "BindBC_bgfx",
-	"dflags": ["-extern-std=c++11"],
+	"dflags-dmd": ["-extern-std=c++11", "-mixin=mixins.d"],
+	"dflags-ldc": ["-extern-std=c++11"],
+	"dflags-gdc": ["--extern-std=c++11"],
 	
 	"configurations": [
 		{
