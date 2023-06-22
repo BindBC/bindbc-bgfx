@@ -1,25 +1,26 @@
 {
 	"name": "bindbc-bgfx",
-	"description": "Dynamic and static D bindings for bgfx.",
+	"description": "Static & dynamic bindings to bgfx, compatible with BetterC, @nogc, and nothrow.",
 	"authors": ["Aya Partridge", "Ari Vuollet"],
 	"license": "BSL-1.0",
 	
-	"dependencies": {"bindbc-common": "~>0.0.99"},
+	"dependencies": {"bindbc-common": "~>0.1.0"},
 	"targetType": "staticLibrary",
 	"targetPath": "lib",
 	"targetName": "BindBC_bgfx",
-	"dflags-dmd": ["-extern-std=c++11", "-mixin=mixins.d"],
+	
+	"dflags-dmd": ["-extern-std=c++11"],
 	"dflags-ldc": ["-extern-std=c++11"],
 	"dflags-gdc": ["--extern-std=c++11"],
 	
 	"configurations": [
 		{
 			"name": "dynamic",
-			"dependencies": {"bindbc-loader": "~>1.0.0"}
+			"dependencies": {"bindbc-loader": "~>1.1.0"}
 		},
 		{
 			"name": "dynamicBC",
-			"dependencies": {"bindbc-loader": "~>1.0.0"},
+			"dependencies": {"bindbc-loader": "~>1.1.0"},
 			"subConfigurations": {
 				"bindbc-common": "yesBC",
 				"bindbc-loader": "yesBC",
