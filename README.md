@@ -1,13 +1,13 @@
 # BindBC-bgfx
 This project provides a set of both static and dynamic D bindings to [bgfx](https://github.com/bkaradzic/bgfx). They are compatible with `@nogc` and `nothrow`, and can be compiled with BetterC compatibility. This package supersedes the [old C99 bgfx bindings](https://github.com/GoaLitiuM/bindbc-bgfx) by @GoaLitiuM.
 
-| Table of Contents |
-|-------------------|
-|[License](#license)|
-|[bgfx documentation](#bgfx-documentation)|
-|[Quickstart guide](#quickstart-guide)|
+| Table of Contents                         |
+|-------------------------------------------|
+|[License](#license)                        |
+|[bgfx documentation](#bgfx-documentation)  |
+|[Quickstart guide](#quickstart-guide)      |
 |[Binding-specific changes](#binding-specific-changes)|
-|[Configurations](#configurations)|
+|[Configurations](#configurations)          |
 |[Generating bindings](#generating-bindings)|
 
 ## License
@@ -17,7 +17,7 @@ BindBC-bgfx&mdash;as well as every other binding in the [BindBC project](https:/
 Bear in mind that you still need to abide by [bgfx's license](https://github.com/bkaradzic/bgfx/blob/master/LICENSE).
 
 ## bgfx documentation
-This readme describes how to use BindBC-bgfx, *not* bgfx. BindBC-bgfx does have some minor API changes from bgfx, which are listed in [Binding-specific changes](#binding-specific-changes). Otherwise BindBC-bgfx is a direct D binding to the bgfx C++ API, so any existing bgfx documentation and tutorials can be adapted with only minor modifications.
+This readme describes how to use BindBC-bgfx, *not* bgfx itself. BindBC-bgfx does have some minor API changes from bgfx, which are listed in [Binding-specific changes](#binding-specific-changes). Otherwise BindBC-bgfx is a direct D binding to the bgfx C++ API, so any existing bgfx documentation and tutorials can be adapted with only minor modifications.
 * bgfx's official [build instructions](https://bkaradzic.github.io/bgfx/build.html).
 * bgfx's official [API Reference](https://bkaradzic.github.io/bgfx/bgfx.html).
 * A [short guide](https://dev.to/pperon/hello-bgfx-4dka) to help new users get started using bgfx.
@@ -56,7 +56,7 @@ If using static bindings, then you will need to add the filename your bgfx libra
 Example __dub.json__
 ```json
 "libs": [
-	"bgfx-shared-libDebug"
+	"bgfx-shared-libDebug",
 ],
 ```
 Example __dub.sdl__
@@ -141,7 +141,7 @@ but the API names are common enough that they could appear in other packages.
 import loader = bindbc.loader.sharedlib;
 
 bool loadLib(){
-	auto ret = loadBgfx();
+	LoadMsg ret = loadBgfx();
 	if(ret != LoadMsg.success){
 		//Log the error info
 		foreach(info; loader.errors){
@@ -205,14 +205,13 @@ For projects that don't use dub, if BindBC-bgfx is compiled for static bindings 
 
 > __Note__
 >
-> The version identifier `BindBC_Static` can be used to configure all of the _official_ BindBC packages used in your program. (i.e. those maintained in [the BindBC GitHub organization](https://github.com/BindBC)) Some third-party BindBC packages may support it as well.
+> The version identifier `BindBC_Static` can be used to configure all of the _official_ BindBC packages used in your program. (i.e. those maintained in [the BindBC GitHub organisation](https://github.com/BindBC)) Some third-party BindBC packages may support it as well.
 
 ### Dynamic bindings
-The dynamic bindings have no link-time dependency on the bgfx libraries, so the bgfx shared libraries must be manually loaded at
-runtime from the shared library search path of the user's system.
+The dynamic bindings have no link-time dependency on the bgfx libraries, so the bgfx shared libraries must be manually loaded at runtime from the shared library search path of the user's system.
 For bgfx, this is typically handled by distributing the bgfx shared library with your program.
 
-The function `isBgfxLoaded` returns `true` if any version of the shared library has been loaded and `false` if not. `unloadBgfx` can be used to unload a sucessfully loaded shared library.
+The function `isBgfxLoaded` returns `true` if any version of the shared library has been loaded and `false` if not. `unloadBgfx` can be used to unload a successfully loaded shared library.
 
 ### Static bindings
 Static _bindings_ do not require static _linking_. The static bindings have a link-time dependency on either the shared _or_ static bgfx libraries. On Windows, you can link with the static libraries or, to use the DLLs, the import libraries. On other systems, you can link with either the static libraries or directly with the shared libraries.
