@@ -1,14 +1,18 @@
+<div align="center" width="100%">
+	<img alt="BindBC-bgfx logo" width="50%" src="https://raw.githubusercontent.com/BindBC/bindbc-branding/master/logo_wide_bgfx.png"/>
+</div>
+
 # BindBC-bgfx
 This project provides a set of both static and dynamic D bindings to [bgfx](https://github.com/bkaradzic/bgfx). They are compatible with `@nogc` and `nothrow`, and can be compiled with BetterC compatibility. This package supersedes the [old C99 bgfx bindings](https://github.com/GoaLitiuM/bindbc-bgfx) by @GoaLitiuM.
 
-| Table of Contents                                   |
-|-----------------------------------------------------|
-|[License](#license)                                  |
-|[bgfx documentation](#bgfx-documentation)            |
-|[Quickstart guide](#quickstart-guide)                |
+| Table of Contents |
+|-------------------|
+|[License](#license)|
+|[bgfx documentation](#bgfx-documentation)|
+|[Quickstart guide](#quickstart-guide)|
 |[Binding-specific changes](#binding-specific-changes)|
-|[Configurations](#configurations)                    |
-|[Generating bindings](#generating-bindings)          |
+|[Configurations](#configurations)|
+|[Generating bindings](#generating-bindings)|
 
 ## License
 
@@ -197,7 +201,7 @@ This reformatting follows [the D Style](https://dlang.org/dstyle.html#naming_enu
 BindBC-bgfx has the following configurations:
 
 |     ┌      |  DRuntime  |   BetterC   |
-|-------------|------------|-------------|
+|------:------|------------|-------------|
 | **Dynamic** | `dynamic`  | `dynamicBC` |
 | **Static**  | `static`   | `staticBC`  |
 
