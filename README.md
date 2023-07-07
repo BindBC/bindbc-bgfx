@@ -3,7 +3,7 @@
 </div>
 
 # BindBC-bgfx
-This project provides a set of both static and dynamic D bindings to [bgfx](https://github.com/bkaradzic/bgfx). They are compatible with `@nogc` and `nothrow`, and can be compiled with BetterC compatibility. This package supersedes the [old C99 bgfx bindings](https://github.com/GoaLitiuM/bindbc-bgfx) by @GoaLitiuM.
+This project provides a set of both static and dynamic D bindings to [bgfx](https://github.com/bkaradzic/bgfx). They are compatible with `@nogc` and `nothrow`, and can be compiled with BetterC compatibility. This package supersedes the old [C99 bgfx bindings by @GoaLitiuM](https://github.com/GoaLitiuM/bindbc-bgfx).
 
 | Table of Contents |
 |-------------------|
