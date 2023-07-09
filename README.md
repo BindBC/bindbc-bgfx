@@ -201,7 +201,7 @@ This reformatting follows [the D Style](https://dlang.org/dstyle.html#naming_enu
 BindBC-bgfx has the following configurations:
 
 |     ┌      |  DRuntime  |   BetterC   |
-|------:------|------------|-------------|
+|-------------|------------|-------------|
 | **Dynamic** | `dynamic`  | `dynamicBC` |
 | **Static**  | `static`   | `staticBC`  |
 
