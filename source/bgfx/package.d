@@ -965,7 +965,7 @@ pragma(inline,true) nothrow @nogc pure @safe{
 ///Renderer capabilities.
 extern(C++, "bgfx") struct Caps{
 	///Renderer runtime limits.
-	extern(C++, "bgfx") struct Limits{
+	struct Limits{
 		uint maxDrawCalls; ///Maximum number of draw calls.
 		uint maxBlits; ///Maximum number of blit calls.
 		uint maxTextureSize; ///Maximum texture size.
@@ -995,7 +995,7 @@ extern(C++, "bgfx") struct Caps{
 		deprecated("Please use `transientIBSize` instead. To be removed in v1.1.0.") alias transientIbSize = transientIBSize;
 	}
 	///GPU info.
-	extern(C++, "bgfx") struct GPU{
+	struct GPU{
 		ushort vendorID; ///Vendor PCI id. See `BGFX_PCI_ID_*`.
 		ushort deviceID; ///Device id.
 	}
@@ -3027,7 +3027,7 @@ mixin(joinFnBinds((){
 		Params:
 			forThread = Explicitly request an encoder for a worker thread.
 		*/
-		[q{Encoder*}, q{begin}, q{bool forThread}, `C++, "bgfx"`],
+		[q{Encoder*}, q{begin}, q{bool forThread=false}, `C++, "bgfx"`],
 		
 		/**
 		* End submitting draw calls from thread.
