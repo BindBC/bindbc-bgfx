@@ -7,7 +7,7 @@ module bgfx;
 
 import bindbc.bgfx.config;
 
-import bindbc.common.types: va_list;
+import bindbc.common.types: c_int64, c_uint64, va_list;
 static import bgfx.fakeenum;
 
 enum uint apiVersion = 121;
@@ -1423,7 +1423,7 @@ extern(C++, "bgfx") struct Encoder{
 				rgba = Sets blend factor used by `BGFX_STATE_BLEND_FACTOR` and
 			  `BGFX_STATE_BLEND_INV_FACTOR` blend modes.
 			*/
-			[q{void}, q{setState}, q{ulong state, uint rgba=0}, `C++`],
+			[q{void}, q{setState}, q{c_uint64 state, uint rgba=0}, `C++`],
 			
 			/**
 			Set condition for rendering.
@@ -2471,7 +2471,7 @@ mixin(joinFnBinds((){
 			format = Texture format. See: `TextureFormat::Enum`.
 			flags = Texture flags. See `BGFX_TEXTURE_*`.
 		*/
-		[q{bool}, q{isTextureValid}, q{ushort depth, bool cubeMap, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, ulong flags}, `C++, "bgfx"`],
+		[q{bool}, q{isTextureValid}, q{ushort depth, bool cubeMap, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags}, `C++, "bgfx"`],
 		
 		/**
 		* Validate frame buffer parameters.
@@ -2508,7 +2508,7 @@ mixin(joinFnBinds((){
 			skip = Skip top level mips when parsing texture.
 			info = When non-`NULL` is specified it returns parsed texture information.
 		*/
-		[q{TextureHandle}, q{createTexture}, q{const(Memory)* mem, ulong flags, ubyte skip=0, TextureInfo* info=null}, `C++, "bgfx"`],
+		[q{TextureHandle}, q{createTexture}, q{const(Memory)* mem, c_uint64 flags, ubyte skip=0, TextureInfo* info=null}, `C++, "bgfx"`],
 		
 		/**
 		* Create 2D texture.
@@ -2529,7 +2529,7 @@ mixin(joinFnBinds((){
 		`_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 		1, expected memory layout is texture and all mips together for each array element.
 		*/
-		[q{TextureHandle}, q{createTexture2D}, q{ushort width, ushort height, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, ulong flags, const(Memory)* mem=null}, `C++, "bgfx"`],
+		[q{TextureHandle}, q{createTexture2D}, q{ushort width, ushort height, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags, const(Memory)* mem=null}, `C++, "bgfx"`],
 		
 		/**
 		* Create texture with size based on back-buffer ratio. Texture will maintain ratio
@@ -2547,7 +2547,7 @@ mixin(joinFnBinds((){
 		- `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 		  sampling.
 		*/
-		[q{TextureHandle}, q{createTexture2D}, q{bgfx.fakeenum.BackbufferRatio.Enum ratio, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, ulong flags=Texture.none|Sampler.none}, `C++, "bgfx"`],
+		[q{TextureHandle}, q{createTexture2D}, q{bgfx.fakeenum.BackbufferRatio.Enum ratio, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none}, `C++, "bgfx"`],
 		
 		/**
 		* Create 3D texture.
@@ -2567,7 +2567,7 @@ mixin(joinFnBinds((){
 		`_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 		1, expected memory layout is texture and all mips together for each array element.
 		*/
-		[q{TextureHandle}, q{createTexture3D}, q{ushort width, ushort height, ushort depth, bool hasMIPs, bgfx.fakeenum.TextureFormat.Enum format, ulong flags=Texture.none|Sampler.none, const(Memory)* mem=null}, `C++, "bgfx"`],
+		[q{TextureHandle}, q{createTexture3D}, q{ushort width, ushort height, ushort depth, bool hasMIPs, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(Memory)* mem=null}, `C++, "bgfx"`],
 		
 		/**
 		* Create Cube texture.
@@ -2587,7 +2587,7 @@ mixin(joinFnBinds((){
 		`_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 		1, expected memory layout is texture and all mips together for each array element.
 		*/
-		[q{TextureHandle}, q{createTextureCube}, q{ushort size, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, ulong flags=Texture.none|Sampler.none, const(Memory)* mem=null}, `C++, "bgfx"`],
+		[q{TextureHandle}, q{createTextureCube}, q{ushort size, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(Memory)* mem=null}, `C++, "bgfx"`],
 		
 		/**
 		* Update 2D texture.
@@ -2707,7 +2707,7 @@ mixin(joinFnBinds((){
 		- `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 		  sampling.
 		*/
-		[q{FrameBufferHandle}, q{createFrameBuffer}, q{ushort width, ushort height, bgfx.fakeenum.TextureFormat.Enum format, ulong textureFlags=SamplerU.clamp|SamplerV.clamp}, `C++, "bgfx"`],
+		[q{FrameBufferHandle}, q{createFrameBuffer}, q{ushort width, ushort height, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 textureFlags=SamplerU.clamp|SamplerV.clamp}, `C++, "bgfx"`],
 		
 		/**
 		* Create frame buffer with size based on back-buffer ratio. Frame buffer will maintain ratio
@@ -2723,7 +2723,7 @@ mixin(joinFnBinds((){
 		- `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 		  sampling.
 		*/
-		[q{FrameBufferHandle}, q{createFrameBuffer}, q{bgfx.fakeenum.BackbufferRatio.Enum ratio, bgfx.fakeenum.TextureFormat.Enum format, ulong textureFlags=SamplerU.clamp|SamplerV.clamp}, `C++, "bgfx"`],
+		[q{FrameBufferHandle}, q{createFrameBuffer}, q{bgfx.fakeenum.BackbufferRatio.Enum ratio, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 textureFlags=SamplerU.clamp|SamplerV.clamp}, `C++, "bgfx"`],
 		
 		/**
 		* Create MRT frame buffer from texture handles (simple).
@@ -3085,7 +3085,7 @@ mixin(joinFnBinds((){
 		- `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 		  sampling.
 		*/
-		[q{size_t}, q{overrideInternal}, q{TextureHandle handle, ushort width, ushort height, ubyte numMIPs, bgfx.fakeenum.TextureFormat.Enum format, ulong flags}, `C++, "bgfx"`],
+		[q{size_t}, q{overrideInternal}, q{TextureHandle handle, ushort width, ushort height, ubyte numMIPs, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags}, `C++, "bgfx"`],
 		
 		/**
 		* Sets a debug marker. This allows you to group graphics calls together for easy browsing in
@@ -3120,7 +3120,7 @@ mixin(joinFnBinds((){
 			rgba = Sets blend factor used by `BGFX_STATE_BLEND_FACTOR` and
 		  `BGFX_STATE_BLEND_INV_FACTOR` blend modes.
 		*/
-		[q{void}, q{setState}, q{ulong state, uint rgba=0}, `C++, "bgfx"`],
+		[q{void}, q{setState}, q{c_uint64 state, uint rgba=0}, `C++, "bgfx"`],
 		
 		/**
 		* Set condition for rendering.
