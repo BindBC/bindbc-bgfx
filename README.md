@@ -3,7 +3,7 @@
 </div>
 
 # BindBC-bgfx
-This project provides a set of both static and dynamic D bindings to [bgfx](https://github.com/bkaradzic/bgfx). They are compatible with `@nogc` and `nothrow`, and can be compiled with BetterC compatibility. This package supersedes the old [C99 bgfx bindings by @GoaLitiuM](https://github.com/GoaLitiuM/bindbc-bgfx).
+This project provides a set of both static and dynamic D bindings to [bgfx](https://github.com/bkaradzic/bgfx). They are compatible with `@nogc` and `nothrow`, and can be compiled with BetterC compatibility. This package is based on and supersedes the old [bgfx C99 API bindings by @GoaLitiuM](https://github.com/GoaLitiuM/bindbc-bgfx).
 
 | Table of Contents |
 |-------------------|
@@ -18,7 +18,7 @@ This project provides a set of both static and dynamic D bindings to [bgfx](http
 
 BindBC-bgfx&mdash;as well as every other binding in the [BindBC project](https://github.com/BindBC)&mdash;is licensed under the [Boost Software License](https://www.boost.org/LICENSE_1_0.txt).
 
-Bear in mind that you still need to abide by [bgfx's license](https://github.com/bkaradzic/bgfx/blob/master/LICENSE).
+Bear in mind that you still need to abide by [bgfx's license](https://github.com/bkaradzic/bgfx/blob/master/LICENSE) if you use it through these bindings.
 
 ## bgfx documentation
 This readme describes how to use BindBC-bgfx, *not* bgfx itself. BindBC-bgfx does have some minor API changes from bgfx, which are listed in [Binding-specific changes](#binding-specific-changes). Otherwise BindBC-bgfx is a direct D binding to the bgfx C++ API, so any existing bgfx documentation and tutorials can be adapted with only minor modifications.
