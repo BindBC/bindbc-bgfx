@@ -55,7 +55,7 @@ Example __dub.sdl__
 subConfiguration "bindbc-bgfx" "staticBC"
 ```
 
-If using static bindings, then you will need to add the filename your bgfx library to `libs`.
+If you're using static bindings, then you will need to add the filename your bgfx library to `libs`.
 
 Example __dub.json__
 ```json
@@ -88,7 +88,7 @@ void main(){
 
 **If you're using dynamic bindings**: you need to load bgfx with `loadBgfx()`. 
 
-For most use cases, it's best to use BindBC-Loader's [error handling API](https://github.com/BindBC/bindbc-loader#error-handling) to see if there were any errors while loading the libraries. This information can be written to a log file before aborting the program.
+For most use cases, it's best to use BindBC-Loader's [error handling API](https://github.com/BindBC/bindbc-loader#error-handling) to see if there were any errors while loading the library. This information can be written to a log file before aborting the program.
 
 The load function will also return a member of the `LoadMsg` enum, which can be used for debugging:
 
@@ -200,7 +200,7 @@ This reformatting follows [the D Style](https://dlang.org/dstyle.html#naming_enu
 ## Configurations
 BindBC-bgfx has the following configurations:
 
-|     ┌      |  DRuntime  |   BetterC   |
+|      ┌      |  DRuntime  |   BetterC   |
 |-------------|------------|-------------|
 | **Dynamic** | `dynamic`  | `dynamicBC` |
 | **Static**  | `static`   | `staticBC`  |
@@ -211,17 +211,17 @@ For projects that don't use dub, if BindBC-bgfx is compiled for static bindings 
 > The version identifier `BindBC_Static` can be used to configure all of the _official_ BindBC packages used in your program. (i.e. those maintained in [the BindBC GitHub organisation](https://github.com/BindBC)) Some third-party BindBC packages may support it as well.
 
 ### Dynamic bindings
-The dynamic bindings have no link-time dependency on the bgfx libraries, so the bgfx shared libraries must be manually loaded at runtime from the shared library search path of the user's system.
+The dynamic bindings have no link-time dependency on the bgfx library, so the bgfx shared library must be manually loaded at runtime from the shared library search path of the user's system.
 For bgfx, this is typically handled by distributing the bgfx shared library with your program.
 
 The function `isBgfxLoaded` returns `true` if any version of the shared library has been loaded and `false` if not. `unloadBgfx` can be used to unload a successfully loaded shared library.
 
 ### Static bindings
-Static _bindings_ do not require static _linking_. The static bindings have a link-time dependency on either the shared _or_ static bgfx libraries. On Windows, you can link with the static libraries or, to use the DLLs, the import libraries. On other systems, you can link with either the static libraries or directly with the shared libraries.
+Static _bindings_ do not require static _linking_. The static bindings have a link-time dependency on either the shared _or_ static bgfx library. On Windows, you can link with the static library or, to use the DLLs, the import library. On other systems, you can link with either the static library or directly with the shared library.
 
-When linking with the shared (or import) libraries, there is a runtime dependency on the shared library just as there is when using the dynamic bindings. The difference is that the shared libraries are no longer loaded manually&mdash;loading is handled automatically by the system when the program is launched. Attempting to call `loadBgfx` with the static bindings enabled will result in a compilation error.
+When linking with the shared (or import) library, there is a runtime dependency on the shared library just as there is when using the dynamic bindings. The difference is that the shared library is no longer loaded manually&mdash;loading is handled automatically by the system when the program is launched. Attempting to call `loadBgfx` with the static bindings enabled will result in a compilation error.
 
-When linking with the static libraries, there is no runtime dependency on bgfx. If you decide to use the static bgfx libraries you will also need to ensure that you link with all of bgfx's link-time dependencies (such as bx, bimg, stdc++, and system API libraries).
+When linking with the static library, there is no runtime dependency on bgfx. If you decide to use the static bgfx library you will also need to ensure that you link with all of bgfx's link-time dependencies (such as bx, bimg, stdc++, and system API libraries).
 
 ## Generating bindings
 
