@@ -34,12 +34,12 @@ To use BindBC-bgfx in your dub project, add it to the list of `dependencies` in 
 Example __dub.json__
 ```json
 "dependencies": {
-	"bindbc-bgfx": "~>1.2.0",
+	"bindbc-bgfx": "~>1.3.0",
 },
 ```
 Example __dub.sdl__
 ```sdl
-dependency "bindbc-bgfx" version="~>1.2.0"
+dependency "bindbc-bgfx" version="~>1.3.0"
 ```
 
 By default, BindBC-bgfx is configured to compile as a dynamic binding that is not BetterC-compatible. If you prefer static bindings or need BetterC compatibility, they can be enabled via `subConfigurations` in your dub configuration file. For configuration naming & more details, see [Configurations](#configurations).
