@@ -4,7 +4,7 @@
 	"authors": ["Aya Partridge", "Ari Vuollet"],
 	"license": "BSL-1.0",
 	
-	"dependencies": {"bindbc-common": "~>0.1.2"},
+	"dependencies": {"bindbc-common": "~>1.0"},
 	"targetType": "staticLibrary",
 	"targetPath": "lib",
 	"targetName": "BindBC_bgfx",
@@ -16,11 +16,11 @@
 	"configurations": [
 		{
 			"name": "dynamic",
-			"dependencies": {"bindbc-loader": "~>1.1.0"}
+			"dependencies": {"bindbc-loader": "~>1.1"}
 		},
 		{
 			"name": "dynamicBC",
-			"dependencies": {"bindbc-loader": "~>1.1.0"},
+			"dependencies": {"bindbc-loader": "~>1.1"},
 			"subConfigurations": {
 				"bindbc-common": "yesBC",
 				"bindbc-loader": "yesBC",
