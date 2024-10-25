@@ -15,4 +15,4 @@ enum staticBinding = (){
 public import bindbc.common.versions;
 import bindbc.common.codegen;
 
-mixin(makeFnBindFns(staticBinding, Version(0,1,1)));
+mixin(makeFnBindFns(staticBinding, Version(1,0,0)));
