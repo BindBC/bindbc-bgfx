@@ -12,6 +12,7 @@ This project provides a set of both static and dynamic D bindings to [bgfx](http
 |[Quickstart guide](#quickstart-guide)|
 |[Binding-specific changes](#binding-specific-changes)|
 |[Configurations](#configurations)|
+|[Library versions](#library-versions)|
 |[Generating bindings](#generating-bindings)|
 
 ## License
@@ -22,9 +23,9 @@ Bear in mind that you still need to abide by [bgfx's license](https://github.com
 
 ## bgfx documentation
 This readme describes how to use BindBC-bgfx, *not* bgfx itself. BindBC-bgfx does have some minor API changes from bgfx, which are listed in [Binding-specific changes](#binding-specific-changes). Otherwise BindBC-bgfx is a direct D binding to the bgfx C++ API, so any existing bgfx documentation and tutorials can be adapted with only minor modifications.
-* bgfx's official [build instructions](https://bkaradzic.github.io/bgfx/build.html).
-* bgfx's official [API Reference](https://bkaradzic.github.io/bgfx/bgfx.html).
-* A [short guide](https://dev.to/pperon/hello-bgfx-4dka) to help new users get started using bgfx.
+* [bgfx's build instructions](https://bkaradzic.github.io/bgfx/build.html)
+* [bgfx's official API Reference](https://bkaradzic.github.io/bgfx/bgfx.html)
+* [Getting started with bgfx (the bring your own framework renderer)](https://bedroomcoders.co.uk/posts/225)
 
 Additionally, because these bindings are auto-generated, bgfx's documentation is also embedded within this library's [source code](https://github.com/BindBC/bindbc-bgfx/blob/master/source/bgfx/package.d).
 
@@ -34,12 +35,12 @@ To use BindBC-bgfx in your dub project, add it to the list of `dependencies` in 
 Example __dub.json__
 ```json
 "dependencies": {
-	"bindbc-bgfx": "~>1.4.0",
+	"bindbc-bgfx": "~>1.129.0",
 },
 ```
 Example __dub.sdl__
 ```sdl
-dependency "bindbc-bgfx" version="~>1.4.0"
+dependency "bindbc-bgfx" version="~>1.129.0"
 ```
 
 By default, BindBC-bgfx is configured to compile as a dynamic binding that is not BetterC-compatible. If you prefer static bindings or need BetterC compatibility, they can be enabled via `subConfigurations` in your dub configuration file. For configuration naming & more details, see [Configurations](#configurations).
@@ -73,7 +74,7 @@ libs "bgfx-shared-libDebug"
 import bindbc.bgfx;
 
 void main(){
-	auto init = bgfx.Init(0);
+	auto init = bgfx.Init(0); //calling the constructor this way is important!
 	
 	init.resolution.width = 800;
 	init.resolution.height = 600;
@@ -86,7 +87,7 @@ void main(){
 }
 ```
 
-**If you're using dynamic bindings**: you need to load bgfx with `loadBgfx()`. 
+**If you're using dynamic bindings**: you need to load bgfx with `loadBgfx()`.
 
 For most use cases, it's best to use BindBC-Loader's [error handling API](https://github.com/BindBC/bindbc-loader#error-handling) to see if there were any errors while loading the library. This information can be written to a log file before aborting the program.
 
@@ -175,27 +176,33 @@ bool loadLib(){
 
 D completely disallows default constructors. Because of this, any default constructors from bgfx take a single `int` as their first parameter. This `int` parameter is always discarded, so you may supply any number, but a `0` is recommended for consistency:
 ```d
-auto init = Init(0);
+auto init = bgfx.Init(0);
 ```
 Failing to call the default constructor of a bgfx struct that has one may lead to unintended consequences, and is therefore not recommended:
 ```d
 //The constructor will not be called in either of these cases:
-Init init1;
-auto init2 = Init(); //no `int` parameter!
+bgfx.Init init1;
+auto init2 = bgfx.Init(); //no `int` parameter!
 ```
 
 ### Enums
-bgfx enums in these bindings are reformatted like so:
-```d
-void bgfxFn(bgfx_renderer_type_t type); //bgfx_some_type_name_t
-//becomes:
-void bgfxFn(RendererType type); //SomeTypeName
+The names of enums in the bindings are converted to D-style enums following [the D Style](https://dlang.org/dstyle.html#naming_enum_members). Here are some examples:
+|        Original C++ API        | D API |
+|--------------------------------|-------|
+|`RendererType::Enum`            |`RendererType`|
+|`RendererType::Enum::OpenGL`    |`RendererType.openGL`|
+|`BGFX_STATE_DEFAULT`            |`State.default_`|
+|`BGFX_STATE_PT_LINES`           |`StatePT.lines`|
+|`BGFX_STATE_CULL_CW`            |`StateCull.cw`|
+|`BGFX_STATE_BLEND_ALPHA`        |`StateBlendFunc.alpha`|
 
-bgfxFn(BGFX_RENDERER_TYPE_OPENGLES); //BGFX_SOME_TYPE_NAME_SOME_MEMBER
-//becomes:
-bgfxFn(RendererType.openGLES); //SomeTypeName.someMember
-```
-This reformatting follows [the D Style](https://dlang.org/dstyle.html#naming_enum_members).
+### Macros
+Preprocessor macro functions have `camelCased` equivalents. Here are some examples:
+
+|        Original C++ API            | D API |
+|------------------------------------|-------|
+|`BGFX_STENCIL_FUNC_REF(v)`          |`toStencilFuncRef(uint v)`|
+|`BGFX_STATE_BLEND_FUNC(src, dst)`   |`blendFunc(StateBlend src, StateBlend dst)`|
 
 ## Configurations
 BindBC-bgfx has the following configurations:
@@ -209,6 +216,18 @@ For projects that don't use dub, if BindBC-bgfx is compiled for static bindings 
 
 > [!NOTE]\
 > The version identifier `BindBC_Static` can be used to configure all of the _official_ BindBC packages used in your program. (i.e. those maintained in [the BindBC GitHub organisation](https://github.com/BindBC)) Some third-party BindBC packages may support it as well.
+
+## Library versions
+The minor version number (e.g. v1.**129**.0) of each tagged BindBC-bgfx release corresponds to the bgfx API version that it is compatible with. Below is a list of available versions.
+
+|bgfx API version|BindBC-bgfx version|
+|----------------|-------------------|
+| 129            | `~>1.129.0`       |
+| 127            | `~>1.127.0`       |
+| 126            | `~>1.126.0`       |
+| 125            | `~>1.125.0`       |
+| 124            | `~>1.124.0`       |
+| 121            | `~>1.121.0`       |
 
 ### Dynamic bindings
 The dynamic bindings have no link-time dependency on the bgfx library, so the bgfx shared library must be manually loaded at runtime from the shared library search path of the user's system.

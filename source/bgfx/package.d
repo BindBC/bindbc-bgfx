@@ -5,18 +5,17 @@
 +/
 module bgfx;
 
-import bindbc.bgfx.config;
-
 import bindbc.common.types: c_int64, c_uint64, va_list;
-static import bgfx.fakeenum;
+import bindbc.bgfx.config;
+static import bgfx.impl;
 
-enum uint apiVersion = 127;
+enum uint apiVersion = 129;
 
 alias ViewID = ushort;
 
 enum invalidHandle(T) = T(ushort.max);
 
-alias ReleaseFn = void function(void* ptr, void* userData);
+alias ReleaseFn = extern(C++) void function(void* ptr, void* userData) nothrow;
 
 ///Memory release callback.
 
@@ -169,14 +168,6 @@ enum StencilFuncRMask: StencilFuncRMask_{
 	mask   = 0x0000_FF00,
 }
 StencilFuncRMask_ toStencilFuncRMask(uint v) nothrow @nogc pure @safe{ return (v << StencilFuncRMask.shift) & StencilFuncRMask.mask; }
-
-deprecated("Please use `StencilFuncRMask_` instead. To be removed in v1.5.0.")
-alias StencilFuncRmask_ = StencilFuncRMask_;
-deprecated("Please use `StencilFuncRMask` instead. To be removed in v1.5.0.")
-alias StencilFuncRmask = StencilFuncRMask;
-deprecated("Please use `toStencilFuncRMask` instead. To be removed in v1.5.0.")
-alias toStencilFuncRmask = toStencilFuncRMask;
-
 
 alias Stencil_ = uint;
 enum Stencil: Stencil_{
@@ -505,33 +496,33 @@ enum CapFlags: CapFlags_{
 	compute                 = 0x0000_0000_0000_0004, ///Compute shaders are supported.
 	conservativeRaster      = 0x0000_0000_0000_0008, ///Conservative rasterization is supported.
 	drawIndirect            = 0x0000_0000_0000_0010, ///Draw indirect is supported.
-	fragmentDepth           = 0x0000_0000_0000_0020, ///Fragment depth is available in fragment shader.
-	fragmentOrdering        = 0x0000_0000_0000_0040, ///Fragment ordering is available in fragment shader.
-	graphicsDebugger        = 0x0000_0000_0000_0080, ///Graphics debugger is present.
-	hdr10                   = 0x0000_0000_0000_0100, ///HDR10 rendering is supported.
-	hiDPI                   = 0x0000_0000_0000_0200, ///HiDPI rendering is supported.
-	imageRW                 = 0x0000_0000_0000_0400, ///Image Read/Write is supported.
-	index32                 = 0x0000_0000_0000_0800, ///32-bit indices are supported.
-	instancing              = 0x0000_0000_0000_1000, ///Instancing is supported.
-	occlusionQuery          = 0x0000_0000_0000_2000, ///Occlusion query is supported.
-	rendererMultithreaded   = 0x0000_0000_0000_4000, ///Renderer is on separate thread.
-	swapChain               = 0x0000_0000_0000_8000, ///Multiple windows are supported.
-	texture2DArray          = 0x0000_0000_0001_0000, ///2D texture array is supported.
-	texture3D               = 0x0000_0000_0002_0000, ///3D textures are supported.
+	drawIndirectCount       = 0x0000_0000_0000_0020, ///Draw indirect with indirect count is supported.
+	fragmentDepth           = 0x0000_0000_0000_0040, ///Fragment depth is available in fragment shader.
+	fragmentOrdering        = 0x0000_0000_0000_0080, ///Fragment ordering is available in fragment shader.
+	graphicsDebugger        = 0x0000_0000_0000_0100, ///Graphics debugger is present.
+	hdr10                   = 0x0000_0000_0000_0200, ///HDR10 rendering is supported.
+	hiDPI                   = 0x0000_0000_0000_0400, ///HiDPI rendering is supported.
+	imageRW                 = 0x0000_0000_0000_0800, ///Image Read/Write is supported.
+	index32                 = 0x0000_0000_0000_1000, ///32-bit indices are supported.
+	instancing              = 0x0000_0000_0000_2000, ///Instancing is supported.
+	occlusionQuery          = 0x0000_0000_0000_4000, ///Occlusion query is supported.
+	primitiveID             = 0x0000_0000_0000_8000, ///PrimitiveID is available in fragment shader.
+	rendererMultithreaded   = 0x0000_0000_0001_0000, ///Renderer is on separate thread.
+	swapChain               = 0x0000_0000_0002_0000, ///Multiple windows are supported.
 	textureBlit             = 0x0000_0000_0004_0000, ///Texture blit is supported.
-	transparentBackbuffer   = 0x0000_0000_0008_0000, ///Transparent back buffer supported.
+	textureCompareLEqual    = 0x0000_0000_0008_0000, ///Texture compare less equal mode is supported.
 	textureCompareReserved  = 0x0000_0000_0010_0000,
-	textureCompareLEqual    = 0x0000_0000_0020_0000, ///Texture compare less equal mode is supported.
-	textureCubeArray        = 0x0000_0000_0040_0000, ///Cubemap texture array is supported.
-	textureDirectAccess     = 0x0000_0000_0080_0000, ///CPU direct access to GPU texture memory.
-	textureReadBack         = 0x0000_0000_0100_0000, ///Read-back texture is supported.
-	vertexAttribHalf        = 0x0000_0000_0200_0000, ///Vertex attribute half-float is supported.
-	vertexAttribUint10      = 0x0000_0000_0400_0000, ///Vertex attribute 10_10_10_2 is supported.
-	vertexID                = 0x0000_0000_0800_0000, ///Rendering with VertexID only is supported.
-	primitiveID             = 0x0000_0000_1000_0000, ///PrimitiveID is available in fragment shader.
-	viewportLayerArray      = 0x0000_0000_2000_0000, ///Viewport layer is available in vertex shader.
-	drawIndirectCount       = 0x0000_0000_4000_0000, ///Draw indirect with indirect count is supported.
-	textureCompareAll       = 0x0000_0000_0030_0000, ///All texture compare modes are supported.
+	textureCubeArray        = 0x0000_0000_0020_0000, ///Cubemap texture array is supported.
+	textureDirectAccess     = 0x0000_0000_0040_0000, ///CPU direct access to GPU texture memory.
+	textureReadBack         = 0x0000_0000_0080_0000, ///Read-back texture is supported.
+	texture2DArray          = 0x0000_0000_0100_0000, ///2D texture array is supported.
+	texture3D               = 0x0000_0000_0200_0000, ///3D textures are supported.
+	transparentBackbuffer   = 0x0000_0000_0400_0000, ///Transparent back buffer supported.
+	vertexAttribHalf        = 0x0000_0000_0800_0000, ///Vertex attribute half-float is supported.
+	vertexAttribUint10      = 0x0000_0000_1000_0000, ///Vertex attribute 10_10_10_2 is supported.
+	vertexID                = 0x0000_0000_2000_0000, ///Rendering with VertexID only is supported.
+	viewportLayerArray      = 0x0000_0000_4000_0000, ///Viewport layer is available in vertex shader.
+	textureCompareAll       = 0x0000_0000_0018_0000, ///All texture compare modes are supported.
 }
 
 alias CapsFormat_ = uint;
@@ -585,74 +576,74 @@ enum CubeMap: CubeMap_{
 }
 
 ///Fatal error enum.
-enum Fatal: bgfx.fakeenum.Fatal.Enum{
-	debugCheck = bgfx.fakeenum.Fatal.Enum.debugCheck,
-	invalidShader = bgfx.fakeenum.Fatal.Enum.invalidShader,
-	unableToInitialize = bgfx.fakeenum.Fatal.Enum.unableToInitialize,
-	unableToInitialise = bgfx.fakeenum.Fatal.Enum.unableToInitialize,
-	unableToCreateTexture = bgfx.fakeenum.Fatal.Enum.unableToCreateTexture,
-	deviceLost = bgfx.fakeenum.Fatal.Enum.deviceLost,
-	count = bgfx.fakeenum.Fatal.Enum.count,
+enum Fatal: bgfx.impl.Fatal.Enum{
+	debugCheck = bgfx.impl.Fatal.Enum.debugCheck,
+	invalidShader = bgfx.impl.Fatal.Enum.invalidShader,
+	unableToInitialize = bgfx.impl.Fatal.Enum.unableToInitialize,
+	unableToInitialise = bgfx.impl.Fatal.Enum.unableToInitialize,
+	unableToCreateTexture = bgfx.impl.Fatal.Enum.unableToCreateTexture,
+	deviceLost = bgfx.impl.Fatal.Enum.deviceLost,
+	count = bgfx.impl.Fatal.Enum.count,
 }
 
 ///Renderer backend type enum.
-enum RendererType: bgfx.fakeenum.RendererType.Enum{
-	noop = bgfx.fakeenum.RendererType.Enum.noop,
-	agc = bgfx.fakeenum.RendererType.Enum.agc,
-	direct3D11 = bgfx.fakeenum.RendererType.Enum.direct3D11,
-	direct3D12 = bgfx.fakeenum.RendererType.Enum.direct3D12,
-	gnm = bgfx.fakeenum.RendererType.Enum.gnm,
-	metal = bgfx.fakeenum.RendererType.Enum.metal,
-	nvn = bgfx.fakeenum.RendererType.Enum.nvn,
-	openGLES = bgfx.fakeenum.RendererType.Enum.openGLES,
-	openGL = bgfx.fakeenum.RendererType.Enum.openGL,
-	vulkan = bgfx.fakeenum.RendererType.Enum.vulkan,
-	count = bgfx.fakeenum.RendererType.Enum.count,
+enum RendererType: bgfx.impl.RendererType.Enum{
+	noop = bgfx.impl.RendererType.Enum.noop,
+	agc = bgfx.impl.RendererType.Enum.agc,
+	direct3D11 = bgfx.impl.RendererType.Enum.direct3D11,
+	direct3D12 = bgfx.impl.RendererType.Enum.direct3D12,
+	gnm = bgfx.impl.RendererType.Enum.gnm,
+	metal = bgfx.impl.RendererType.Enum.metal,
+	nvn = bgfx.impl.RendererType.Enum.nvn,
+	openGLES = bgfx.impl.RendererType.Enum.openGLES,
+	openGL = bgfx.impl.RendererType.Enum.openGL,
+	vulkan = bgfx.impl.RendererType.Enum.vulkan,
+	count = bgfx.impl.RendererType.Enum.count,
 }
 
 ///Access mode enum.
-enum Access: bgfx.fakeenum.Access.Enum{
-	read = bgfx.fakeenum.Access.Enum.read,
-	write = bgfx.fakeenum.Access.Enum.write,
-	readWrite = bgfx.fakeenum.Access.Enum.readWrite,
-	count = bgfx.fakeenum.Access.Enum.count,
+enum Access: bgfx.impl.Access.Enum{
+	read = bgfx.impl.Access.Enum.read,
+	write = bgfx.impl.Access.Enum.write,
+	readWrite = bgfx.impl.Access.Enum.readWrite,
+	count = bgfx.impl.Access.Enum.count,
 }
 
 ///Vertex attribute enum.
-enum Attrib: bgfx.fakeenum.Attrib.Enum{
-	position = bgfx.fakeenum.Attrib.Enum.position,
-	normal = bgfx.fakeenum.Attrib.Enum.normal,
-	tangent = bgfx.fakeenum.Attrib.Enum.tangent,
-	bitangent = bgfx.fakeenum.Attrib.Enum.bitangent,
-	color0 = bgfx.fakeenum.Attrib.Enum.color0,
-	colour0 = bgfx.fakeenum.Attrib.Enum.color0,
-	color1 = bgfx.fakeenum.Attrib.Enum.color1,
-	colour1 = bgfx.fakeenum.Attrib.Enum.color1,
-	color2 = bgfx.fakeenum.Attrib.Enum.color2,
-	colour2 = bgfx.fakeenum.Attrib.Enum.color2,
-	color3 = bgfx.fakeenum.Attrib.Enum.color3,
-	colour3 = bgfx.fakeenum.Attrib.Enum.color3,
-	indices = bgfx.fakeenum.Attrib.Enum.indices,
-	weight = bgfx.fakeenum.Attrib.Enum.weight,
-	texCoord0 = bgfx.fakeenum.Attrib.Enum.texCoord0,
-	texCoord1 = bgfx.fakeenum.Attrib.Enum.texCoord1,
-	texCoord2 = bgfx.fakeenum.Attrib.Enum.texCoord2,
-	texCoord3 = bgfx.fakeenum.Attrib.Enum.texCoord3,
-	texCoord4 = bgfx.fakeenum.Attrib.Enum.texCoord4,
-	texCoord5 = bgfx.fakeenum.Attrib.Enum.texCoord5,
-	texCoord6 = bgfx.fakeenum.Attrib.Enum.texCoord6,
-	texCoord7 = bgfx.fakeenum.Attrib.Enum.texCoord7,
-	count = bgfx.fakeenum.Attrib.Enum.count,
+enum Attrib: bgfx.impl.Attrib.Enum{
+	position = bgfx.impl.Attrib.Enum.position,
+	normal = bgfx.impl.Attrib.Enum.normal,
+	tangent = bgfx.impl.Attrib.Enum.tangent,
+	bitangent = bgfx.impl.Attrib.Enum.bitangent,
+	color0 = bgfx.impl.Attrib.Enum.color0,
+	colour0 = bgfx.impl.Attrib.Enum.color0,
+	color1 = bgfx.impl.Attrib.Enum.color1,
+	colour1 = bgfx.impl.Attrib.Enum.color1,
+	color2 = bgfx.impl.Attrib.Enum.color2,
+	colour2 = bgfx.impl.Attrib.Enum.color2,
+	color3 = bgfx.impl.Attrib.Enum.color3,
+	colour3 = bgfx.impl.Attrib.Enum.color3,
+	indices = bgfx.impl.Attrib.Enum.indices,
+	weight = bgfx.impl.Attrib.Enum.weight,
+	texCoord0 = bgfx.impl.Attrib.Enum.texCoord0,
+	texCoord1 = bgfx.impl.Attrib.Enum.texCoord1,
+	texCoord2 = bgfx.impl.Attrib.Enum.texCoord2,
+	texCoord3 = bgfx.impl.Attrib.Enum.texCoord3,
+	texCoord4 = bgfx.impl.Attrib.Enum.texCoord4,
+	texCoord5 = bgfx.impl.Attrib.Enum.texCoord5,
+	texCoord6 = bgfx.impl.Attrib.Enum.texCoord6,
+	texCoord7 = bgfx.impl.Attrib.Enum.texCoord7,
+	count = bgfx.impl.Attrib.Enum.count,
 }
 
 ///Vertex attribute type enum.
-enum AttribType: bgfx.fakeenum.AttribType.Enum{
-	uint8 = bgfx.fakeenum.AttribType.Enum.uint8,
-	uint10 = bgfx.fakeenum.AttribType.Enum.uint10,
-	int16 = bgfx.fakeenum.AttribType.Enum.int16,
-	half = bgfx.fakeenum.AttribType.Enum.half,
-	float_ = bgfx.fakeenum.AttribType.Enum.float_,
-	count = bgfx.fakeenum.AttribType.Enum.count,
+enum AttribType: bgfx.impl.AttribType.Enum{
+	uint8 = bgfx.impl.AttribType.Enum.uint8,
+	uint10 = bgfx.impl.AttribType.Enum.uint10,
+	int16 = bgfx.impl.AttribType.Enum.int16,
+	half = bgfx.impl.AttribType.Enum.half,
+	float_ = bgfx.impl.AttribType.Enum.float_,
+	count = bgfx.impl.AttribType.Enum.count,
 }
 
 /**
@@ -669,195 +660,195 @@ Notation:
       +-------- Components
 @attention Availability depends on Caps (see: formats).
 */
-enum TextureFormat: bgfx.fakeenum.TextureFormat.Enum{
-	bc1 = bgfx.fakeenum.TextureFormat.Enum.bc1,
-	bc2 = bgfx.fakeenum.TextureFormat.Enum.bc2,
-	bc3 = bgfx.fakeenum.TextureFormat.Enum.bc3,
-	bc4 = bgfx.fakeenum.TextureFormat.Enum.bc4,
-	bc5 = bgfx.fakeenum.TextureFormat.Enum.bc5,
-	bc6h = bgfx.fakeenum.TextureFormat.Enum.bc6h,
-	bc7 = bgfx.fakeenum.TextureFormat.Enum.bc7,
-	etc1 = bgfx.fakeenum.TextureFormat.Enum.etc1,
-	etc2 = bgfx.fakeenum.TextureFormat.Enum.etc2,
-	etc2a = bgfx.fakeenum.TextureFormat.Enum.etc2a,
-	etc2a1 = bgfx.fakeenum.TextureFormat.Enum.etc2a1,
-	ptc12 = bgfx.fakeenum.TextureFormat.Enum.ptc12,
-	ptc14 = bgfx.fakeenum.TextureFormat.Enum.ptc14,
-	ptc12a = bgfx.fakeenum.TextureFormat.Enum.ptc12a,
-	ptc14a = bgfx.fakeenum.TextureFormat.Enum.ptc14a,
-	ptc22 = bgfx.fakeenum.TextureFormat.Enum.ptc22,
-	ptc24 = bgfx.fakeenum.TextureFormat.Enum.ptc24,
-	atc = bgfx.fakeenum.TextureFormat.Enum.atc,
-	atce = bgfx.fakeenum.TextureFormat.Enum.atce,
-	atci = bgfx.fakeenum.TextureFormat.Enum.atci,
-	astc4x4 = bgfx.fakeenum.TextureFormat.Enum.astc4x4,
-	astc5x4 = bgfx.fakeenum.TextureFormat.Enum.astc5x4,
-	astc5x5 = bgfx.fakeenum.TextureFormat.Enum.astc5x5,
-	astc6x5 = bgfx.fakeenum.TextureFormat.Enum.astc6x5,
-	astc6x6 = bgfx.fakeenum.TextureFormat.Enum.astc6x6,
-	astc8x5 = bgfx.fakeenum.TextureFormat.Enum.astc8x5,
-	astc8x6 = bgfx.fakeenum.TextureFormat.Enum.astc8x6,
-	astc8x8 = bgfx.fakeenum.TextureFormat.Enum.astc8x8,
-	astc10x5 = bgfx.fakeenum.TextureFormat.Enum.astc10x5,
-	astc10x6 = bgfx.fakeenum.TextureFormat.Enum.astc10x6,
-	astc10x8 = bgfx.fakeenum.TextureFormat.Enum.astc10x8,
-	astc10x10 = bgfx.fakeenum.TextureFormat.Enum.astc10x10,
-	astc12x10 = bgfx.fakeenum.TextureFormat.Enum.astc12x10,
-	astc12x12 = bgfx.fakeenum.TextureFormat.Enum.astc12x12,
-	unknown = bgfx.fakeenum.TextureFormat.Enum.unknown,
-	r1 = bgfx.fakeenum.TextureFormat.Enum.r1,
-	a8 = bgfx.fakeenum.TextureFormat.Enum.a8,
-	r8 = bgfx.fakeenum.TextureFormat.Enum.r8,
-	r8i = bgfx.fakeenum.TextureFormat.Enum.r8i,
-	r8u = bgfx.fakeenum.TextureFormat.Enum.r8u,
-	r8s = bgfx.fakeenum.TextureFormat.Enum.r8s,
-	r16 = bgfx.fakeenum.TextureFormat.Enum.r16,
-	r16i = bgfx.fakeenum.TextureFormat.Enum.r16i,
-	r16u = bgfx.fakeenum.TextureFormat.Enum.r16u,
-	r16f = bgfx.fakeenum.TextureFormat.Enum.r16f,
-	r16s = bgfx.fakeenum.TextureFormat.Enum.r16s,
-	r32i = bgfx.fakeenum.TextureFormat.Enum.r32i,
-	r32u = bgfx.fakeenum.TextureFormat.Enum.r32u,
-	r32f = bgfx.fakeenum.TextureFormat.Enum.r32f,
-	rg8 = bgfx.fakeenum.TextureFormat.Enum.rg8,
-	rg8i = bgfx.fakeenum.TextureFormat.Enum.rg8i,
-	rg8u = bgfx.fakeenum.TextureFormat.Enum.rg8u,
-	rg8s = bgfx.fakeenum.TextureFormat.Enum.rg8s,
-	rg16 = bgfx.fakeenum.TextureFormat.Enum.rg16,
-	rg16i = bgfx.fakeenum.TextureFormat.Enum.rg16i,
-	rg16u = bgfx.fakeenum.TextureFormat.Enum.rg16u,
-	rg16f = bgfx.fakeenum.TextureFormat.Enum.rg16f,
-	rg16s = bgfx.fakeenum.TextureFormat.Enum.rg16s,
-	rg32i = bgfx.fakeenum.TextureFormat.Enum.rg32i,
-	rg32u = bgfx.fakeenum.TextureFormat.Enum.rg32u,
-	rg32f = bgfx.fakeenum.TextureFormat.Enum.rg32f,
-	rgb8 = bgfx.fakeenum.TextureFormat.Enum.rgb8,
-	rgb8i = bgfx.fakeenum.TextureFormat.Enum.rgb8i,
-	rgb8u = bgfx.fakeenum.TextureFormat.Enum.rgb8u,
-	rgb8s = bgfx.fakeenum.TextureFormat.Enum.rgb8s,
-	rgb9e5f = bgfx.fakeenum.TextureFormat.Enum.rgb9e5f,
-	bgra8 = bgfx.fakeenum.TextureFormat.Enum.bgra8,
-	rgba8 = bgfx.fakeenum.TextureFormat.Enum.rgba8,
-	rgba8i = bgfx.fakeenum.TextureFormat.Enum.rgba8i,
-	rgba8u = bgfx.fakeenum.TextureFormat.Enum.rgba8u,
-	rgba8s = bgfx.fakeenum.TextureFormat.Enum.rgba8s,
-	rgba16 = bgfx.fakeenum.TextureFormat.Enum.rgba16,
-	rgba16i = bgfx.fakeenum.TextureFormat.Enum.rgba16i,
-	rgba16u = bgfx.fakeenum.TextureFormat.Enum.rgba16u,
-	rgba16f = bgfx.fakeenum.TextureFormat.Enum.rgba16f,
-	rgba16s = bgfx.fakeenum.TextureFormat.Enum.rgba16s,
-	rgba32i = bgfx.fakeenum.TextureFormat.Enum.rgba32i,
-	rgba32u = bgfx.fakeenum.TextureFormat.Enum.rgba32u,
-	rgba32f = bgfx.fakeenum.TextureFormat.Enum.rgba32f,
-	b5g6r5 = bgfx.fakeenum.TextureFormat.Enum.b5g6r5,
-	r5g6b5 = bgfx.fakeenum.TextureFormat.Enum.r5g6b5,
-	bgra4 = bgfx.fakeenum.TextureFormat.Enum.bgra4,
-	rgba4 = bgfx.fakeenum.TextureFormat.Enum.rgba4,
-	bgr5a1 = bgfx.fakeenum.TextureFormat.Enum.bgr5a1,
-	rgb5a1 = bgfx.fakeenum.TextureFormat.Enum.rgb5a1,
-	rgb10a2 = bgfx.fakeenum.TextureFormat.Enum.rgb10a2,
-	rg11b10f = bgfx.fakeenum.TextureFormat.Enum.rg11b10f,
-	unknownDepth = bgfx.fakeenum.TextureFormat.Enum.unknownDepth,
-	d16 = bgfx.fakeenum.TextureFormat.Enum.d16,
-	d24 = bgfx.fakeenum.TextureFormat.Enum.d24,
-	d24s8 = bgfx.fakeenum.TextureFormat.Enum.d24s8,
-	d32 = bgfx.fakeenum.TextureFormat.Enum.d32,
-	d16f = bgfx.fakeenum.TextureFormat.Enum.d16f,
-	d24f = bgfx.fakeenum.TextureFormat.Enum.d24f,
-	d32f = bgfx.fakeenum.TextureFormat.Enum.d32f,
-	d0s8 = bgfx.fakeenum.TextureFormat.Enum.d0s8,
-	count = bgfx.fakeenum.TextureFormat.Enum.count,
+enum TextureFormat: bgfx.impl.TextureFormat.Enum{
+	bc1 = bgfx.impl.TextureFormat.Enum.bc1,
+	bc2 = bgfx.impl.TextureFormat.Enum.bc2,
+	bc3 = bgfx.impl.TextureFormat.Enum.bc3,
+	bc4 = bgfx.impl.TextureFormat.Enum.bc4,
+	bc5 = bgfx.impl.TextureFormat.Enum.bc5,
+	bc6h = bgfx.impl.TextureFormat.Enum.bc6h,
+	bc7 = bgfx.impl.TextureFormat.Enum.bc7,
+	etc1 = bgfx.impl.TextureFormat.Enum.etc1,
+	etc2 = bgfx.impl.TextureFormat.Enum.etc2,
+	etc2a = bgfx.impl.TextureFormat.Enum.etc2a,
+	etc2a1 = bgfx.impl.TextureFormat.Enum.etc2a1,
+	ptc12 = bgfx.impl.TextureFormat.Enum.ptc12,
+	ptc14 = bgfx.impl.TextureFormat.Enum.ptc14,
+	ptc12a = bgfx.impl.TextureFormat.Enum.ptc12a,
+	ptc14a = bgfx.impl.TextureFormat.Enum.ptc14a,
+	ptc22 = bgfx.impl.TextureFormat.Enum.ptc22,
+	ptc24 = bgfx.impl.TextureFormat.Enum.ptc24,
+	atc = bgfx.impl.TextureFormat.Enum.atc,
+	atce = bgfx.impl.TextureFormat.Enum.atce,
+	atci = bgfx.impl.TextureFormat.Enum.atci,
+	astc4x4 = bgfx.impl.TextureFormat.Enum.astc4x4,
+	astc5x4 = bgfx.impl.TextureFormat.Enum.astc5x4,
+	astc5x5 = bgfx.impl.TextureFormat.Enum.astc5x5,
+	astc6x5 = bgfx.impl.TextureFormat.Enum.astc6x5,
+	astc6x6 = bgfx.impl.TextureFormat.Enum.astc6x6,
+	astc8x5 = bgfx.impl.TextureFormat.Enum.astc8x5,
+	astc8x6 = bgfx.impl.TextureFormat.Enum.astc8x6,
+	astc8x8 = bgfx.impl.TextureFormat.Enum.astc8x8,
+	astc10x5 = bgfx.impl.TextureFormat.Enum.astc10x5,
+	astc10x6 = bgfx.impl.TextureFormat.Enum.astc10x6,
+	astc10x8 = bgfx.impl.TextureFormat.Enum.astc10x8,
+	astc10x10 = bgfx.impl.TextureFormat.Enum.astc10x10,
+	astc12x10 = bgfx.impl.TextureFormat.Enum.astc12x10,
+	astc12x12 = bgfx.impl.TextureFormat.Enum.astc12x12,
+	unknown = bgfx.impl.TextureFormat.Enum.unknown,
+	r1 = bgfx.impl.TextureFormat.Enum.r1,
+	a8 = bgfx.impl.TextureFormat.Enum.a8,
+	r8 = bgfx.impl.TextureFormat.Enum.r8,
+	r8i = bgfx.impl.TextureFormat.Enum.r8i,
+	r8u = bgfx.impl.TextureFormat.Enum.r8u,
+	r8s = bgfx.impl.TextureFormat.Enum.r8s,
+	r16 = bgfx.impl.TextureFormat.Enum.r16,
+	r16i = bgfx.impl.TextureFormat.Enum.r16i,
+	r16u = bgfx.impl.TextureFormat.Enum.r16u,
+	r16f = bgfx.impl.TextureFormat.Enum.r16f,
+	r16s = bgfx.impl.TextureFormat.Enum.r16s,
+	r32i = bgfx.impl.TextureFormat.Enum.r32i,
+	r32u = bgfx.impl.TextureFormat.Enum.r32u,
+	r32f = bgfx.impl.TextureFormat.Enum.r32f,
+	rg8 = bgfx.impl.TextureFormat.Enum.rg8,
+	rg8i = bgfx.impl.TextureFormat.Enum.rg8i,
+	rg8u = bgfx.impl.TextureFormat.Enum.rg8u,
+	rg8s = bgfx.impl.TextureFormat.Enum.rg8s,
+	rg16 = bgfx.impl.TextureFormat.Enum.rg16,
+	rg16i = bgfx.impl.TextureFormat.Enum.rg16i,
+	rg16u = bgfx.impl.TextureFormat.Enum.rg16u,
+	rg16f = bgfx.impl.TextureFormat.Enum.rg16f,
+	rg16s = bgfx.impl.TextureFormat.Enum.rg16s,
+	rg32i = bgfx.impl.TextureFormat.Enum.rg32i,
+	rg32u = bgfx.impl.TextureFormat.Enum.rg32u,
+	rg32f = bgfx.impl.TextureFormat.Enum.rg32f,
+	rgb8 = bgfx.impl.TextureFormat.Enum.rgb8,
+	rgb8i = bgfx.impl.TextureFormat.Enum.rgb8i,
+	rgb8u = bgfx.impl.TextureFormat.Enum.rgb8u,
+	rgb8s = bgfx.impl.TextureFormat.Enum.rgb8s,
+	rgb9e5f = bgfx.impl.TextureFormat.Enum.rgb9e5f,
+	bgra8 = bgfx.impl.TextureFormat.Enum.bgra8,
+	rgba8 = bgfx.impl.TextureFormat.Enum.rgba8,
+	rgba8i = bgfx.impl.TextureFormat.Enum.rgba8i,
+	rgba8u = bgfx.impl.TextureFormat.Enum.rgba8u,
+	rgba8s = bgfx.impl.TextureFormat.Enum.rgba8s,
+	rgba16 = bgfx.impl.TextureFormat.Enum.rgba16,
+	rgba16i = bgfx.impl.TextureFormat.Enum.rgba16i,
+	rgba16u = bgfx.impl.TextureFormat.Enum.rgba16u,
+	rgba16f = bgfx.impl.TextureFormat.Enum.rgba16f,
+	rgba16s = bgfx.impl.TextureFormat.Enum.rgba16s,
+	rgba32i = bgfx.impl.TextureFormat.Enum.rgba32i,
+	rgba32u = bgfx.impl.TextureFormat.Enum.rgba32u,
+	rgba32f = bgfx.impl.TextureFormat.Enum.rgba32f,
+	b5g6r5 = bgfx.impl.TextureFormat.Enum.b5g6r5,
+	r5g6b5 = bgfx.impl.TextureFormat.Enum.r5g6b5,
+	bgra4 = bgfx.impl.TextureFormat.Enum.bgra4,
+	rgba4 = bgfx.impl.TextureFormat.Enum.rgba4,
+	bgr5a1 = bgfx.impl.TextureFormat.Enum.bgr5a1,
+	rgb5a1 = bgfx.impl.TextureFormat.Enum.rgb5a1,
+	rgb10a2 = bgfx.impl.TextureFormat.Enum.rgb10a2,
+	rg11b10f = bgfx.impl.TextureFormat.Enum.rg11b10f,
+	unknownDepth = bgfx.impl.TextureFormat.Enum.unknownDepth,
+	d16 = bgfx.impl.TextureFormat.Enum.d16,
+	d24 = bgfx.impl.TextureFormat.Enum.d24,
+	d24s8 = bgfx.impl.TextureFormat.Enum.d24s8,
+	d32 = bgfx.impl.TextureFormat.Enum.d32,
+	d16f = bgfx.impl.TextureFormat.Enum.d16f,
+	d24f = bgfx.impl.TextureFormat.Enum.d24f,
+	d32f = bgfx.impl.TextureFormat.Enum.d32f,
+	d0s8 = bgfx.impl.TextureFormat.Enum.d0s8,
+	count = bgfx.impl.TextureFormat.Enum.count,
 }
 
 ///Uniform type enum.
-enum UniformType: bgfx.fakeenum.UniformType.Enum{
-	sampler = bgfx.fakeenum.UniformType.Enum.sampler,
-	end = bgfx.fakeenum.UniformType.Enum.end,
-	vec4 = bgfx.fakeenum.UniformType.Enum.vec4,
-	mat3 = bgfx.fakeenum.UniformType.Enum.mat3,
-	mat4 = bgfx.fakeenum.UniformType.Enum.mat4,
-	count = bgfx.fakeenum.UniformType.Enum.count,
+enum UniformType: bgfx.impl.UniformType.Enum{
+	sampler = bgfx.impl.UniformType.Enum.sampler,
+	end = bgfx.impl.UniformType.Enum.end,
+	vec4 = bgfx.impl.UniformType.Enum.vec4,
+	mat3 = bgfx.impl.UniformType.Enum.mat3,
+	mat4 = bgfx.impl.UniformType.Enum.mat4,
+	count = bgfx.impl.UniformType.Enum.count,
 }
 
 ///Backbuffer ratio enum.
-enum BackbufferRatio: bgfx.fakeenum.BackbufferRatio.Enum{
-	equal = bgfx.fakeenum.BackbufferRatio.Enum.equal,
-	half = bgfx.fakeenum.BackbufferRatio.Enum.half,
-	quarter = bgfx.fakeenum.BackbufferRatio.Enum.quarter,
-	eighth = bgfx.fakeenum.BackbufferRatio.Enum.eighth,
-	sixteenth = bgfx.fakeenum.BackbufferRatio.Enum.sixteenth,
-	double_ = bgfx.fakeenum.BackbufferRatio.Enum.double_,
-	count = bgfx.fakeenum.BackbufferRatio.Enum.count,
+enum BackbufferRatio: bgfx.impl.BackbufferRatio.Enum{
+	equal = bgfx.impl.BackbufferRatio.Enum.equal,
+	half = bgfx.impl.BackbufferRatio.Enum.half,
+	quarter = bgfx.impl.BackbufferRatio.Enum.quarter,
+	eighth = bgfx.impl.BackbufferRatio.Enum.eighth,
+	sixteenth = bgfx.impl.BackbufferRatio.Enum.sixteenth,
+	double_ = bgfx.impl.BackbufferRatio.Enum.double_,
+	count = bgfx.impl.BackbufferRatio.Enum.count,
 }
 
 ///Occlusion query result.
-enum OcclusionQueryResult: bgfx.fakeenum.OcclusionQueryResult.Enum{
-	invisible = bgfx.fakeenum.OcclusionQueryResult.Enum.invisible,
-	visible = bgfx.fakeenum.OcclusionQueryResult.Enum.visible,
-	noResult = bgfx.fakeenum.OcclusionQueryResult.Enum.noResult,
-	count = bgfx.fakeenum.OcclusionQueryResult.Enum.count,
+enum OcclusionQueryResult: bgfx.impl.OcclusionQueryResult.Enum{
+	invisible = bgfx.impl.OcclusionQueryResult.Enum.invisible,
+	visible = bgfx.impl.OcclusionQueryResult.Enum.visible,
+	noResult = bgfx.impl.OcclusionQueryResult.Enum.noResult,
+	count = bgfx.impl.OcclusionQueryResult.Enum.count,
 }
 
 ///Primitive topology.
-enum Topology: bgfx.fakeenum.Topology.Enum{
-	triList = bgfx.fakeenum.Topology.Enum.triList,
-	triStrip = bgfx.fakeenum.Topology.Enum.triStrip,
-	lineList = bgfx.fakeenum.Topology.Enum.lineList,
-	lineStrip = bgfx.fakeenum.Topology.Enum.lineStrip,
-	pointList = bgfx.fakeenum.Topology.Enum.pointList,
-	count = bgfx.fakeenum.Topology.Enum.count,
+enum Topology: bgfx.impl.Topology.Enum{
+	triList = bgfx.impl.Topology.Enum.triList,
+	triStrip = bgfx.impl.Topology.Enum.triStrip,
+	lineList = bgfx.impl.Topology.Enum.lineList,
+	lineStrip = bgfx.impl.Topology.Enum.lineStrip,
+	pointList = bgfx.impl.Topology.Enum.pointList,
+	count = bgfx.impl.Topology.Enum.count,
 }
 
 ///Topology conversion function.
-enum TopologyConvert: bgfx.fakeenum.TopologyConvert.Enum{
-	triListFlipWinding = bgfx.fakeenum.TopologyConvert.Enum.triListFlipWinding,
-	triStripFlipWinding = bgfx.fakeenum.TopologyConvert.Enum.triStripFlipWinding,
-	triListToLineList = bgfx.fakeenum.TopologyConvert.Enum.triListToLineList,
-	triStripToTriList = bgfx.fakeenum.TopologyConvert.Enum.triStripToTriList,
-	lineStripToLineList = bgfx.fakeenum.TopologyConvert.Enum.lineStripToLineList,
-	count = bgfx.fakeenum.TopologyConvert.Enum.count,
+enum TopologyConvert: bgfx.impl.TopologyConvert.Enum{
+	triListFlipWinding = bgfx.impl.TopologyConvert.Enum.triListFlipWinding,
+	triStripFlipWinding = bgfx.impl.TopologyConvert.Enum.triStripFlipWinding,
+	triListToLineList = bgfx.impl.TopologyConvert.Enum.triListToLineList,
+	triStripToTriList = bgfx.impl.TopologyConvert.Enum.triStripToTriList,
+	lineStripToLineList = bgfx.impl.TopologyConvert.Enum.lineStripToLineList,
+	count = bgfx.impl.TopologyConvert.Enum.count,
 }
 
 ///Topology sort order.
-enum TopologySort: bgfx.fakeenum.TopologySort.Enum{
-	directionFrontToBackMin = bgfx.fakeenum.TopologySort.Enum.directionFrontToBackMin,
-	directionFrontToBackAvg = bgfx.fakeenum.TopologySort.Enum.directionFrontToBackAvg,
-	directionFrontToBackMax = bgfx.fakeenum.TopologySort.Enum.directionFrontToBackMax,
-	directionBackToFrontMin = bgfx.fakeenum.TopologySort.Enum.directionBackToFrontMin,
-	directionBackToFrontAvg = bgfx.fakeenum.TopologySort.Enum.directionBackToFrontAvg,
-	directionBackToFrontMax = bgfx.fakeenum.TopologySort.Enum.directionBackToFrontMax,
-	distanceFrontToBackMin = bgfx.fakeenum.TopologySort.Enum.distanceFrontToBackMin,
-	distanceFrontToBackAvg = bgfx.fakeenum.TopologySort.Enum.distanceFrontToBackAvg,
-	distanceFrontToBackMax = bgfx.fakeenum.TopologySort.Enum.distanceFrontToBackMax,
-	distanceBackToFrontMin = bgfx.fakeenum.TopologySort.Enum.distanceBackToFrontMin,
-	distanceBackToFrontAvg = bgfx.fakeenum.TopologySort.Enum.distanceBackToFrontAvg,
-	distanceBackToFrontMax = bgfx.fakeenum.TopologySort.Enum.distanceBackToFrontMax,
-	count = bgfx.fakeenum.TopologySort.Enum.count,
+enum TopologySort: bgfx.impl.TopologySort.Enum{
+	directionFrontToBackMin = bgfx.impl.TopologySort.Enum.directionFrontToBackMin,
+	directionFrontToBackAvg = bgfx.impl.TopologySort.Enum.directionFrontToBackAvg,
+	directionFrontToBackMax = bgfx.impl.TopologySort.Enum.directionFrontToBackMax,
+	directionBackToFrontMin = bgfx.impl.TopologySort.Enum.directionBackToFrontMin,
+	directionBackToFrontAvg = bgfx.impl.TopologySort.Enum.directionBackToFrontAvg,
+	directionBackToFrontMax = bgfx.impl.TopologySort.Enum.directionBackToFrontMax,
+	distanceFrontToBackMin = bgfx.impl.TopologySort.Enum.distanceFrontToBackMin,
+	distanceFrontToBackAvg = bgfx.impl.TopologySort.Enum.distanceFrontToBackAvg,
+	distanceFrontToBackMax = bgfx.impl.TopologySort.Enum.distanceFrontToBackMax,
+	distanceBackToFrontMin = bgfx.impl.TopologySort.Enum.distanceBackToFrontMin,
+	distanceBackToFrontAvg = bgfx.impl.TopologySort.Enum.distanceBackToFrontAvg,
+	distanceBackToFrontMax = bgfx.impl.TopologySort.Enum.distanceBackToFrontMax,
+	count = bgfx.impl.TopologySort.Enum.count,
 }
 
 ///View mode sets draw call sort order.
-enum ViewMode: bgfx.fakeenum.ViewMode.Enum{
-	default_ = bgfx.fakeenum.ViewMode.Enum.default_,
-	sequential = bgfx.fakeenum.ViewMode.Enum.sequential,
-	depthAscending = bgfx.fakeenum.ViewMode.Enum.depthAscending,
-	depthDescending = bgfx.fakeenum.ViewMode.Enum.depthDescending,
-	count = bgfx.fakeenum.ViewMode.Enum.count,
+enum ViewMode: bgfx.impl.ViewMode.Enum{
+	default_ = bgfx.impl.ViewMode.Enum.default_,
+	sequential = bgfx.impl.ViewMode.Enum.sequential,
+	depthAscending = bgfx.impl.ViewMode.Enum.depthAscending,
+	depthDescending = bgfx.impl.ViewMode.Enum.depthDescending,
+	count = bgfx.impl.ViewMode.Enum.count,
 }
 
 ///Native window handle type.
-enum NativeWindowHandleType: bgfx.fakeenum.NativeWindowHandleType.Enum{
-	default_ = bgfx.fakeenum.NativeWindowHandleType.Enum.default_,
-	wayland = bgfx.fakeenum.NativeWindowHandleType.Enum.wayland,
-	count = bgfx.fakeenum.NativeWindowHandleType.Enum.count,
+enum NativeWindowHandleType: bgfx.impl.NativeWindowHandleType.Enum{
+	default_ = bgfx.impl.NativeWindowHandleType.Enum.default_,
+	wayland = bgfx.impl.NativeWindowHandleType.Enum.wayland,
+	count = bgfx.impl.NativeWindowHandleType.Enum.count,
 }
 
 ///Render frame enum.
-enum RenderFrame: bgfx.fakeenum.RenderFrame.Enum{
-	noContext = bgfx.fakeenum.RenderFrame.Enum.noContext,
-	render = bgfx.fakeenum.RenderFrame.Enum.render,
-	timeout = bgfx.fakeenum.RenderFrame.Enum.timeout,
-	exiting = bgfx.fakeenum.RenderFrame.Enum.exiting,
-	count = bgfx.fakeenum.RenderFrame.Enum.count,
+enum RenderFrame: bgfx.impl.RenderFrame.Enum{
+	noContext = bgfx.impl.RenderFrame.Enum.noContext,
+	render = bgfx.impl.RenderFrame.Enum.render,
+	timeout = bgfx.impl.RenderFrame.Enum.timeout,
+	exiting = bgfx.impl.RenderFrame.Enum.exiting,
+	count = bgfx.impl.RenderFrame.Enum.count,
 }
 
 extern(C++, "bgfx") struct DynamicIndexBufferHandle{
@@ -908,7 +899,28 @@ extern(C++, "bgfx") struct VertexLayoutHandle{
 	ushort idx;
 }
 
-pragma(inline,true) nothrow @nogc pure @safe{
+pragma(inline,true) nothrow @nogc{
+	/**
+	Allocate a buffer to pass to bgfx. Data will be freed inside bgfx.
+	Params:
+		size = Size to allocate.
+	*/
+	MemoryRef alloc(uint size){
+		auto mem = bgfx.impl.alloc(__traits(parameters));
+		return MemoryRef(cast(ubyte[])mem.data[0..mem.size], mem);
+	}
+	/**
+	Allocate a buffer to pass to bgfx and copy `data` into it. Data will be freed inside bgfx.
+	Params:
+		data = Pointer to data to be copied.
+		size = Size of data to be copied.
+	*/
+	MemoryRef copy(const(void)* data, uint size){
+		auto mem = bgfx.impl.copy(__traits(parameters));
+		return MemoryRef(cast(ubyte[])mem.data[0..mem.size], mem);
+	}
+	
+	pure @safe:
 	StateBlend_ blendFuncSeparate(StateBlend_ srcRGB, StateBlend_ dstRGB, StateBlend_ srcA, StateBlend_ dstA){
 		return (srcRGB | ((dstRGB) << 4)) | ((srcA | (dstA << 4)) << 8);
 	}
@@ -972,6 +984,16 @@ pragma(inline,true) nothrow @nogc pure @safe{
 	StateBlend_ blendFuncRT3E(StateBlend_ src, StateBlend_ dst, StateBlendEquation_ equation){
 		return blendFuncRTxE(src, dst, equation) << 22;
 	}
+}
+
+/**
+A wrapper around `Memory` that allows you to mutate its `data`.
+Do not create instances of this struct yourself.
+*/
+struct MemoryRef{
+	ubyte[] data;
+	const(Memory)* memory;
+	alias memory this;
 }
 
 ///Renderer capabilities.
@@ -1113,6 +1135,12 @@ extern(C++, "bgfx") struct Init{
 		uint minResourceCBSize; ///Minimum resource command buffer size.
 		uint transientVBSize; ///Maximum transient vertex buffer size.
 		uint transientIBSize; ///Maximum transient index buffer size.
+		extern(D) mixin(joinFnBinds((){
+			FnBind[] ret = [
+				{q{void}, q{this}, q{}, ext: `C++`},
+			];
+			return ret;
+		}()));
 	}
 	
 	/**
@@ -1245,7 +1273,7 @@ extern(C++, "bgfx") struct Attachment{
 				mip = Mip level.
 				resolve = Resolve flags. See: `BGFX_RESOLVE_*`
 			*/
-			{q{void}, q{init}, q{TextureHandle handle, bgfx.fakeenum.Access.Enum access=Access.write, ushort layer=0, ushort numLayers=1, ushort mip=0, ubyte resolve=Resolve.autoGenMIPs}, ext: `C++`},
+			{q{void}, q{init}, q{TextureHandle handle, bgfx.impl.Access.Enum access=Access.write, ushort layer=0, ushort numLayers=1, ushort mip=0, ubyte resolve=Resolve.autoGenMIPs}, ext: `C++`},
 		];
 		return ret;
 	}()));
@@ -1337,7 +1365,7 @@ extern(C++, "bgfx") struct VertexLayout{
 			Params:
 				rendererType = Renderer backend type. See: `bgfx::RendererType`
 			*/
-			{q{VertexLayout*}, q{begin}, q{bgfx.fakeenum.RendererType.Enum rendererType=RendererType.noop}, ext: `C++`},
+			{q{VertexLayout*}, q{begin}, q{bgfx.impl.RendererType.Enum rendererType=RendererType.noop}, ext: `C++`},
 			
 			/**
 			Add attribute to VertexLayout.
@@ -1354,7 +1382,7 @@ extern(C++, "bgfx") struct VertexLayout{
 			vertexConvert for AttribType::Uint8 and AttribType::Int16.
 			Unpacking code must be implemented inside vertex shader.
 			*/
-			{q{VertexLayout*}, q{add}, q{bgfx.fakeenum.Attrib.Enum attrib, ubyte num, bgfx.fakeenum.AttribType.Enum type, bool normalised=false, bool asInt=false}, ext: `C++`},
+			{q{VertexLayout*}, q{add}, q{bgfx.impl.Attrib.Enum attrib, ubyte num, bgfx.impl.AttribType.Enum type, bool normalised=false, bool asInt=false}, ext: `C++`},
 			
 			/**
 			Decode attribute.
@@ -1365,7 +1393,7 @@ extern(C++, "bgfx") struct VertexLayout{
 				normalised = Attribute is normalized.
 				asInt = Attribute is packed as int.
 			*/
-			{q{void}, q{decode}, q{bgfx.fakeenum.Attrib.Enum attrib, ref ubyte num, ref bgfx.fakeenum.AttribType.Enum type, ref bool normalised, ref bool asInt}, ext: `C++`, memAttr: q{const}},
+			{q{void}, q{decode}, q{bgfx.impl.Attrib.Enum attrib, ref ubyte num, ref bgfx.impl.AttribType.Enum type, ref bool normalised, ref bool asInt}, ext: `C++`, memAttr: q{const}},
 			
 			/**
 			Skip `_num` bytes in vertex stream.
@@ -1738,7 +1766,7 @@ extern(C++, "bgfx") struct Encoder{
 				handle = Index buffer handle.
 				access = Buffer access. See `Access::Enum`.
 			*/
-			{q{void}, q{setBuffer}, q{ubyte stage, IndexBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++`},
+			{q{void}, q{setBuffer}, q{ubyte stage, IndexBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++`},
 			
 			/**
 			Set compute vertex buffer.
@@ -1747,7 +1775,7 @@ extern(C++, "bgfx") struct Encoder{
 				handle = Vertex buffer handle.
 				access = Buffer access. See `Access::Enum`.
 			*/
-			{q{void}, q{setBuffer}, q{ubyte stage, VertexBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++`},
+			{q{void}, q{setBuffer}, q{ubyte stage, VertexBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++`},
 			
 			/**
 			Set compute dynamic index buffer.
@@ -1756,7 +1784,7 @@ extern(C++, "bgfx") struct Encoder{
 				handle = Dynamic index buffer handle.
 				access = Buffer access. See `Access::Enum`.
 			*/
-			{q{void}, q{setBuffer}, q{ubyte stage, DynamicIndexBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++`},
+			{q{void}, q{setBuffer}, q{ubyte stage, DynamicIndexBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++`},
 			
 			/**
 			Set compute dynamic vertex buffer.
@@ -1765,7 +1793,7 @@ extern(C++, "bgfx") struct Encoder{
 				handle = Dynamic vertex buffer handle.
 				access = Buffer access. See `Access::Enum`.
 			*/
-			{q{void}, q{setBuffer}, q{ubyte stage, DynamicVertexBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++`},
+			{q{void}, q{setBuffer}, q{ubyte stage, DynamicVertexBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++`},
 			
 			/**
 			Set compute indirect buffer.
@@ -1774,7 +1802,7 @@ extern(C++, "bgfx") struct Encoder{
 				handle = Indirect buffer handle.
 				access = Buffer access. See `Access::Enum`.
 			*/
-			{q{void}, q{setBuffer}, q{ubyte stage, IndirectBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++`},
+			{q{void}, q{setBuffer}, q{ubyte stage, IndirectBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++`},
 			
 			/**
 			Set compute image from texture.
@@ -1785,7 +1813,7 @@ extern(C++, "bgfx") struct Encoder{
 				access = Image access. See `Access::Enum`.
 				format = Texture format. See: `TextureFormat::Enum`.
 			*/
-			{q{void}, q{setImage}, q{ubyte stage, TextureHandle handle, ubyte mip, bgfx.fakeenum.Access.Enum access, bgfx.fakeenum.TextureFormat.Enum format=TextureFormat.count}, ext: `C++`},
+			{q{void}, q{setImage}, q{ubyte stage, TextureHandle handle, ubyte mip, bgfx.impl.Access.Enum access, bgfx.impl.TextureFormat.Enum format=TextureFormat.count}, ext: `C++`},
 			
 			/**
 			Dispatch compute.
@@ -1878,7 +1906,7 @@ mixin(joinFnBinds((){
 			data = Destination vertex stream where data will be packed.
 			index = Vertex index that will be modified.
 		*/
-		{q{void}, q{vertexPack}, q{const(float)* input, bool inputNormalised, bgfx.fakeenum.Attrib.Enum attr, ref const VertexLayout layout, void* data, uint index=0}, ext: `C++, "bgfx"`},
+		{q{void}, q{vertexPack}, q{const(float)* input, bool inputNormalised, bgfx.impl.Attrib.Enum attr, ref const VertexLayout layout, void* data, uint index=0}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Unpack vertex attribute from vertex stream format.
@@ -1889,7 +1917,7 @@ mixin(joinFnBinds((){
 			data = Source vertex stream from where data will be unpacked.
 			index = Vertex index that will be unpacked.
 		*/
-		{q{void}, q{vertexUnpack}, q{float* output, bgfx.fakeenum.Attrib.Enum attr, ref const VertexLayout layout, const(void)* data, uint index=0}, ext: `C++, "bgfx"`},
+		{q{void}, q{vertexUnpack}, q{float* output, bgfx.impl.Attrib.Enum attr, ref const VertexLayout layout, const(void)* data, uint index=0}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Converts vertex stream data from one vertex stream format to another.
@@ -1928,7 +1956,7 @@ mixin(joinFnBinds((){
 			numIndices = Number of input indices.
 			index32 = Set to `true` if input indices are 32-bit.
 		*/
-		{q{uint}, q{topologyConvert}, q{bgfx.fakeenum.TopologyConvert.Enum conversion, void* dst, uint dstSize, const(void)* indices, uint numIndices, bool index32}, ext: `C++, "bgfx"`},
+		{q{uint}, q{topologyConvert}, q{bgfx.impl.TopologyConvert.Enum conversion, void* dst, uint dstSize, const(void)* indices, uint numIndices, bool index32}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Sort indices.
@@ -1948,7 +1976,7 @@ mixin(joinFnBinds((){
 			numIndices = Number of input indices.
 			index32 = Set to `true` if input indices are 32-bit.
 		*/
-		{q{void}, q{topologySortTriList}, q{bgfx.fakeenum.TopologySort.Enum sort, void* dst, uint dstSize, const(float)* dir, const(float)* pos, const(void)* vertices, uint stride, const(void)* indices, uint numIndices, bool index32}, ext: `C++, "bgfx"`},
+		{q{void}, q{topologySortTriList}, q{bgfx.impl.TopologySort.Enum sort, void* dst, uint dstSize, const(float)* dir, const(float)* pos, const(void)* vertices, uint stride, const(void)* indices, uint numIndices, bool index32}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Returns supported backend API renderers.
@@ -1956,14 +1984,14 @@ mixin(joinFnBinds((){
 			max = Maximum number of elements in _enum array.
 			enum_ = Array where supported renderers will be written.
 		*/
-		{q{ubyte}, q{getSupportedRenderers}, q{ubyte max=0, bgfx.fakeenum.RendererType.Enum* enum_=null}, ext: `C++, "bgfx"`},
+		{q{ubyte}, q{getSupportedRenderers}, q{ubyte max=0, bgfx.impl.RendererType.Enum* enum_=null}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Returns name of renderer.
 		Params:
 			type = Renderer backend type. See: `bgfx::RendererType`
 		*/
-		{q{const(char)*}, q{getRendererName}, q{bgfx.fakeenum.RendererType.Enum type}, ext: `C++, "bgfx"`},
+		{q{const(char)*}, q{getRendererName}, q{bgfx.impl.RendererType.Enum type}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Initialize the bgfx library.
@@ -1998,7 +2026,7 @@ mixin(joinFnBinds((){
 		  - `BGFX_RESET_SRGB_BACKBUFFER` - Enable sRGB back-buffer.
 			format = Texture format. See: `TextureFormat::Enum`.
 		*/
-		{q{void}, q{reset}, q{uint width, uint height, uint flags=Reset.none, bgfx.fakeenum.TextureFormat.Enum format=TextureFormat.count}, ext: `C++, "bgfx"`},
+		{q{void}, q{reset}, q{uint width, uint height, uint flags=Reset.none, bgfx.impl.TextureFormat.Enum format=TextureFormat.count}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Advance to next frame. When using multithreaded renderer, this call
@@ -2028,21 +2056,6 @@ mixin(joinFnBinds((){
 		* Attention: Pointer returned is valid until `bgfx::frame` is called.
 		*/
 		{q{const(Stats)*}, q{getStats}, q{}, ext: `C++, "bgfx"`},
-		
-		/**
-		* Allocate buffer to pass to bgfx calls. Data will be freed inside bgfx.
-		Params:
-			size = Size to allocate.
-		*/
-		{q{const(Memory)*}, q{alloc}, q{uint size}, ext: `C++, "bgfx"`},
-		
-		/**
-		* Allocate buffer and copy data into it. Data will be freed inside bgfx.
-		Params:
-			data = Pointer to data to be copied.
-			size = Size of data to be copied.
-		*/
-		{q{const(Memory)*}, q{copy}, q{const(void)* data, uint size}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Make reference to data to pass to bgfx. Unlike `bgfx::alloc`, this call
@@ -2474,7 +2487,7 @@ mixin(joinFnBinds((){
 			format = Texture format. See: `TextureFormat::Enum`.
 			flags = Texture flags. See `BGFX_TEXTURE_*`.
 		*/
-		{q{bool}, q{isTextureValid}, q{ushort depth, bool cubeMap, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags}, ext: `C++, "bgfx"`},
+		{q{bool}, q{isTextureValid}, q{ushort depth, bool cubeMap, ushort numLayers, bgfx.impl.TextureFormat.Enum format, c_uint64 flags}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Validate frame buffer parameters.
@@ -2496,7 +2509,7 @@ mixin(joinFnBinds((){
 			numLayers = Number of layers in texture array.
 			format = Texture format. See: `TextureFormat::Enum`.
 		*/
-		{q{void}, q{calcTextureSize}, q{ref TextureInfo info, ushort width, ushort height, ushort depth, bool cubeMap, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format}, ext: `C++, "bgfx"`},
+		{q{void}, q{calcTextureSize}, q{ref TextureInfo info, ushort width, ushort height, ushort depth, bool cubeMap, bool hasMIPs, ushort numLayers, bgfx.impl.TextureFormat.Enum format}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create texture from memory buffer.
@@ -2511,7 +2524,7 @@ mixin(joinFnBinds((){
 			skip = Skip top level mips when parsing texture.
 			info = When non-`NULL` is specified it returns parsed texture information.
 		*/
-		{q{TextureHandle}, q{createTexture}, q{const(Memory)* mem, c_uint64 flags, ubyte skip=0, TextureInfo* info=null}, ext: `C++, "bgfx"`},
+		{q{TextureHandle}, q{createTexture}, q{const(Memory)* mem, c_uint64 flags=Texture.none|Sampler.none, ubyte skip=0, TextureInfo* info=null}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create 2D texture.
@@ -2532,7 +2545,7 @@ mixin(joinFnBinds((){
 		`_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 		1, expected memory layout is texture and all mips together for each array element.
 		*/
-		{q{TextureHandle}, q{createTexture2D}, q{ushort width, ushort height, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags, const(Memory)* mem=null}, ext: `C++, "bgfx"`},
+		{q{TextureHandle}, q{createTexture2D}, q{ushort width, ushort height, bool hasMIPs, ushort numLayers, bgfx.impl.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(Memory)* mem=null}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create texture with size based on back-buffer ratio. Texture will maintain ratio
@@ -2550,7 +2563,7 @@ mixin(joinFnBinds((){
 		- `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 		  sampling.
 		*/
-		{q{TextureHandle}, q{createTexture2D}, q{bgfx.fakeenum.BackbufferRatio.Enum ratio, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none}, ext: `C++, "bgfx"`},
+		{q{TextureHandle}, q{createTexture2D}, q{bgfx.impl.BackbufferRatio.Enum ratio, bool hasMIPs, ushort numLayers, bgfx.impl.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create 3D texture.
@@ -2570,7 +2583,7 @@ mixin(joinFnBinds((){
 		`_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 		1, expected memory layout is texture and all mips together for each array element.
 		*/
-		{q{TextureHandle}, q{createTexture3D}, q{ushort width, ushort height, ushort depth, bool hasMIPs, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(Memory)* mem=null}, ext: `C++, "bgfx"`},
+		{q{TextureHandle}, q{createTexture3D}, q{ushort width, ushort height, ushort depth, bool hasMIPs, bgfx.impl.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(Memory)* mem=null}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create Cube texture.
@@ -2590,7 +2603,7 @@ mixin(joinFnBinds((){
 		`_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 		1, expected memory layout is texture and all mips together for each array element.
 		*/
-		{q{TextureHandle}, q{createTextureCube}, q{ushort size, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(Memory)* mem=null}, ext: `C++, "bgfx"`},
+		{q{TextureHandle}, q{createTextureCube}, q{ushort size, bool hasMIPs, ushort numLayers, bgfx.impl.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(Memory)* mem=null}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Update 2D texture.
@@ -2710,7 +2723,7 @@ mixin(joinFnBinds((){
 		- `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 		  sampling.
 		*/
-		{q{FrameBufferHandle}, q{createFrameBuffer}, q{ushort width, ushort height, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 textureFlags=SamplerU.clamp|SamplerV.clamp}, ext: `C++, "bgfx"`},
+		{q{FrameBufferHandle}, q{createFrameBuffer}, q{ushort width, ushort height, bgfx.impl.TextureFormat.Enum format, c_uint64 textureFlags=SamplerU.clamp|SamplerV.clamp}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create frame buffer with size based on back-buffer ratio. Frame buffer will maintain ratio
@@ -2726,7 +2739,7 @@ mixin(joinFnBinds((){
 		- `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 		  sampling.
 		*/
-		{q{FrameBufferHandle}, q{createFrameBuffer}, q{bgfx.fakeenum.BackbufferRatio.Enum ratio, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 textureFlags=SamplerU.clamp|SamplerV.clamp}, ext: `C++, "bgfx"`},
+		{q{FrameBufferHandle}, q{createFrameBuffer}, q{bgfx.impl.BackbufferRatio.Enum ratio, bgfx.impl.TextureFormat.Enum format, c_uint64 textureFlags=SamplerU.clamp|SamplerV.clamp}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create MRT frame buffer from texture handles (simple).
@@ -2761,7 +2774,7 @@ mixin(joinFnBinds((){
 			format = Window back buffer color format.
 			depthFormat = Window back buffer depth format.
 		*/
-		{q{FrameBufferHandle}, q{createFrameBuffer}, q{void* nwh, ushort width, ushort height, bgfx.fakeenum.TextureFormat.Enum format=TextureFormat.count, bgfx.fakeenum.TextureFormat.Enum depthFormat=TextureFormat.count}, ext: `C++, "bgfx"`},
+		{q{FrameBufferHandle}, q{createFrameBuffer}, q{void* nwh, ushort width, ushort height, bgfx.impl.TextureFormat.Enum format=TextureFormat.count, bgfx.impl.TextureFormat.Enum depthFormat=TextureFormat.count}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set frame buffer debug name.
@@ -2809,6 +2822,7 @@ mixin(joinFnBinds((){
 		*      - `u_model mat4[BGFX_CONFIG_MAX_BONES]` - array of model matrices.
 		*      - `u_modelView mat4` - concatenated model view matrix, only first
 		*        model matrix from array is used.
+		*      - `u_invModelView mat4` - inverted concatenated model view matrix.
 		*      - `u_modelViewProj mat4` - concatenated model view projection matrix.
 		*      - `u_alphaRef float` - alpha reference value for alpha test.
 		Params:
@@ -2816,7 +2830,7 @@ mixin(joinFnBinds((){
 			type = Type of uniform (See: `bgfx::UniformType`).
 			num = Number of elements in array.
 		*/
-		{q{UniformHandle}, q{createUniform}, q{const(char)* name, bgfx.fakeenum.UniformType.Enum type, ushort num=1}, ext: `C++, "bgfx"`},
+		{q{UniformHandle}, q{createUniform}, q{const(char)* name, bgfx.impl.UniformType.Enum type, ushort num=1}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Retrieve uniform info.
@@ -2866,6 +2880,17 @@ mixin(joinFnBinds((){
 		* Set palette color value.
 		Params:
 			index = Index into palette.
+			r = Red value (RGBA floating point values)
+			g = Green value (RGBA floating point values)
+			b = Blue value (RGBA floating point values)
+			a = Alpha value (RGBA floating point values)
+		*/
+		{q{void}, q{setPaletteColor}, q{ubyte index, float r, float g, float b, float a}, ext: `C++, "bgfx"`},
+		
+		/**
+		* Set palette color value.
+		Params:
+			index = Index into palette.
 			rgba = Packed 32-bit RGBA value.
 		*/
 		{q{void}, q{setPaletteColor}, q{ubyte index, uint rgba}, ext: `C++, "bgfx"`},
@@ -2907,7 +2932,7 @@ mixin(joinFnBinds((){
 			ratio = Width and height will be set in respect to back-buffer size.
 		See: `BackbufferRatio::Enum`.
 		*/
-		{q{void}, q{setViewRect}, q{ViewID id, ushort x, ushort y, bgfx.fakeenum.BackbufferRatio.Enum ratio}, ext: `C++, "bgfx"`},
+		{q{void}, q{setViewRect}, q{ViewID id, ushort x, ushort y, bgfx.impl.BackbufferRatio.Enum ratio}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set view scissor. Draw primitive outside view will be clipped. When
@@ -2962,7 +2987,7 @@ mixin(joinFnBinds((){
 			id = View id.
 			mode = View sort mode. See `ViewMode::Enum`.
 		*/
-		{q{void}, q{setViewMode}, q{ViewID id, bgfx.fakeenum.ViewMode.Enum mode=ViewMode.default_}, ext: `C++, "bgfx"`},
+		{q{void}, q{setViewMode}, q{ViewID id, bgfx.impl.ViewMode.Enum mode=ViewMode.default_}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set view frame buffer.
@@ -3090,7 +3115,7 @@ mixin(joinFnBinds((){
 		- `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 		  sampling.
 		*/
-		{q{size_t}, q{overrideInternal}, q{TextureHandle handle, ushort width, ushort height, ubyte numMIPs, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none | Sampler.none}, ext: `C++, "bgfx"`},
+		{q{size_t}, q{overrideInternal}, q{TextureHandle handle, ushort width, ushort height, ubyte numMIPs, bgfx.impl.TextureFormat.Enum format, c_uint64 flags=Texture.none | Sampler.none}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Sets a debug marker. This allows you to group graphics calls together for easy browsing in
@@ -3450,7 +3475,7 @@ mixin(joinFnBinds((){
 			handle = Index buffer handle.
 			access = Buffer access. See `Access::Enum`.
 		*/
-		{q{void}, q{setBuffer}, q{ubyte stage, IndexBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++, "bgfx"`},
+		{q{void}, q{setBuffer}, q{ubyte stage, IndexBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set compute vertex buffer.
@@ -3459,7 +3484,7 @@ mixin(joinFnBinds((){
 			handle = Vertex buffer handle.
 			access = Buffer access. See `Access::Enum`.
 		*/
-		{q{void}, q{setBuffer}, q{ubyte stage, VertexBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++, "bgfx"`},
+		{q{void}, q{setBuffer}, q{ubyte stage, VertexBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set compute dynamic index buffer.
@@ -3468,7 +3493,7 @@ mixin(joinFnBinds((){
 			handle = Dynamic index buffer handle.
 			access = Buffer access. See `Access::Enum`.
 		*/
-		{q{void}, q{setBuffer}, q{ubyte stage, DynamicIndexBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++, "bgfx"`},
+		{q{void}, q{setBuffer}, q{ubyte stage, DynamicIndexBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set compute dynamic vertex buffer.
@@ -3477,7 +3502,7 @@ mixin(joinFnBinds((){
 			handle = Dynamic vertex buffer handle.
 			access = Buffer access. See `Access::Enum`.
 		*/
-		{q{void}, q{setBuffer}, q{ubyte stage, DynamicVertexBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++, "bgfx"`},
+		{q{void}, q{setBuffer}, q{ubyte stage, DynamicVertexBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set compute indirect buffer.
@@ -3486,7 +3511,7 @@ mixin(joinFnBinds((){
 			handle = Indirect buffer handle.
 			access = Buffer access. See `Access::Enum`.
 		*/
-		{q{void}, q{setBuffer}, q{ubyte stage, IndirectBufferHandle handle, bgfx.fakeenum.Access.Enum access}, ext: `C++, "bgfx"`},
+		{q{void}, q{setBuffer}, q{ubyte stage, IndirectBufferHandle handle, bgfx.impl.Access.Enum access}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set compute image from texture.
@@ -3497,7 +3522,7 @@ mixin(joinFnBinds((){
 			access = Image access. See `Access::Enum`.
 			format = Texture format. See: `TextureFormat::Enum`.
 		*/
-		{q{void}, q{setImage}, q{ubyte stage, TextureHandle handle, ubyte mip, bgfx.fakeenum.Access.Enum access, bgfx.fakeenum.TextureFormat.Enum format=TextureFormat.count}, ext: `C++, "bgfx"`},
+		{q{void}, q{setImage}, q{ubyte stage, TextureHandle handle, ubyte mip, bgfx.impl.Access.Enum access, bgfx.impl.TextureFormat.Enum format=TextureFormat.count}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Dispatch compute.
@@ -3576,13 +3601,13 @@ mixin(joinFnBinds((){
 		
 	];
 	return ret;
-}(), "Resolution, Init, Attachment, VertexLayout, Encoder, "));
+}(), "Resolution, Init.Limits, Init, Attachment, VertexLayout, Encoder, "));
 
 static if(!staticBinding):
 import bindbc.loader;
 
 debug{
-	mixin(makeDynloadFns("Bgfx", makeLibPaths(["bgfx-shared-libDebug", "bgfxDebug", "bgfx"]), [__MODULE__]));
+	mixin(makeDynloadFns("Bgfx", makeLibPaths(["bgfx-shared-libDebug", "bgfxDebug", "bgfx"]), [__MODULE__, "bgfx.impl"]));
 }else{
-	mixin(makeDynloadFns("Bgfx", makeLibPaths(["bgfx-shared-libRelease", "bgfxRelease", "bgfx"]), [__MODULE__]));
+	mixin(makeDynloadFns("Bgfx", makeLibPaths(["bgfx-shared-libRelease", "bgfxRelease", "bgfx"]), [__MODULE__, "bgfx.impl"]));
 }
