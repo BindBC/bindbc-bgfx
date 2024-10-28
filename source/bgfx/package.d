@@ -974,6 +974,46 @@ pragma(inline,true) nothrow @nogc pure @safe{
 	}
 }
 
+pragma(inline,true) nothrow @nogc{
+	/**
+	* Allocate buffer to pass to bgfx calls. Data will be freed inside bgfx.
+	Params:
+		size = Size to allocate.
+	*/
+	Memory alloc(uint size){
+		auto bad = cast(bgfx.fakeenum.Memory*)bgfx.fakeenum.alloc(__traits(parameters));
+		return Memory(bad.data[0..bad.size], bad);
+	}
+	/**
+	* Allocate buffer and copy data into it. Data will be freed inside bgfx.
+	Params:
+		data = Pointer to data to be copied.
+		size = Size of data to be copied.
+	*/
+	Memory copy(const(void)* data, uint size){
+		auto bad = cast(bgfx.fakeenum.Memory*)bgfx.fakeenum.copy(__traits(parameters));
+		return Memory(bad.data[0..bad.size], bad);
+	}
+	/**
+	* Make reference to data to pass to bgfx. Unlike `bgfx::alloc`, this call
+	* doesn't allocate memory for data. It just copies the _data pointer. You
+	* can pass `ReleaseFn` function pointer to release this memory after it's
+	* consumed, otherwise you must make sure _data is available for at least 2
+	* `bgfx::frame` calls. `ReleaseFn` function must be able to be called
+	* from any thread.
+	* Attention: Data passed must be available for at least 2 `bgfx::frame` calls.
+	Params:
+		data = Pointer to data.
+		size = Size of data.
+		releaseFn = Callback function to release memory after use.
+		userData = User data to be passed to callback function.
+	*/
+	Memory makeRef(const(void)* data, uint size, ReleaseFn releaseFn=null, void* userData=null){
+		auto bad = cast(bgfx.fakeenum.Memory*)bgfx.fakeenum.makeRef(__traits(parameters));
+		return Memory(bad.data[0..bad.size], bad);
+	}
+}
+
 ///Renderer capabilities.
 extern(C++, "bgfx") struct Caps{
 	///GPU info.
@@ -1172,8 +1212,9 @@ Memory must be obtained by calling `bgfx::alloc`, `bgfx::copy`, or `bgfx::makeRe
 @attention It is illegal to create this structure on stack and pass it to any bgfx API.
 */
 extern(C++, "bgfx") struct Memory{
-	ubyte* data; ///Pointer to data.
-	uint size; ///Data size.
+	ubyte[] slice;
+	const(bgfx.fakeenum.Memory)* internal;
+	alias internal this;
 }
 
 ///Transient index buffer.
@@ -2030,37 +2071,6 @@ mixin(joinFnBinds((){
 		{q{const(Stats)*}, q{getStats}, q{}, ext: `C++, "bgfx"`},
 		
 		/**
-		* Allocate buffer to pass to bgfx calls. Data will be freed inside bgfx.
-		Params:
-			size = Size to allocate.
-		*/
-		{q{const(Memory)*}, q{alloc}, q{uint size}, ext: `C++, "bgfx"`},
-		
-		/**
-		* Allocate buffer and copy data into it. Data will be freed inside bgfx.
-		Params:
-			data = Pointer to data to be copied.
-			size = Size of data to be copied.
-		*/
-		{q{const(Memory)*}, q{copy}, q{const(void)* data, uint size}, ext: `C++, "bgfx"`},
-		
-		/**
-		* Make reference to data to pass to bgfx. Unlike `bgfx::alloc`, this call
-		* doesn't allocate memory for data. It just copies the _data pointer. You
-		* can pass `ReleaseFn` function pointer to release this memory after it's
-		* consumed, otherwise you must make sure _data is available for at least 2
-		* `bgfx::frame` calls. `ReleaseFn` function must be able to be called
-		* from any thread.
-		* Attention: Data passed must be available for at least 2 `bgfx::frame` calls.
-		Params:
-			data = Pointer to data.
-			size = Size of data.
-			releaseFn = Callback function to release memory after use.
-			userData = User data to be passed to callback function.
-		*/
-		{q{const(Memory)*}, q{makeRef}, q{const(void)* data, uint size, ReleaseFn releaseFn=null, void* userData=null}, ext: `C++, "bgfx"`},
-		
-		/**
 		* Set debug flags.
 		Params:
 			debug_ = Available flags:
@@ -2135,7 +2145,7 @@ mixin(joinFnBinds((){
 		  - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on
 		      index buffers.
 		*/
-		{q{IndexBufferHandle}, q{createIndexBuffer}, q{const(Memory)* mem, ushort flags=Buffer.none}, ext: `C++, "bgfx"`},
+		{q{IndexBufferHandle}, q{createIndexBuffer}, q{const(bgfx.fakeenum.Memory)* mem, ushort flags=Buffer.none}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set static index buffer debug name.
@@ -2184,7 +2194,7 @@ mixin(joinFnBinds((){
 		     will be trimmed to fit the existing buffer size. This flag has effect only on dynamic buffers.
 		 - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on index buffers.
 		*/
-		{q{VertexBufferHandle}, q{createVertexBuffer}, q{const(Memory)* mem, ref const VertexLayout layout, ushort flags=Buffer.none}, ext: `C++, "bgfx"`},
+		{q{VertexBufferHandle}, q{createVertexBuffer}, q{const(bgfx.fakeenum.Memory)* mem, ref const VertexLayout layout, ushort flags=Buffer.none}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Set static vertex buffer debug name.
@@ -2239,7 +2249,7 @@ mixin(joinFnBinds((){
 		  - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on
 		      index buffers.
 		*/
-		{q{DynamicIndexBufferHandle}, q{createDynamicIndexBuffer}, q{const(Memory)* mem, ushort flags=Buffer.none}, ext: `C++, "bgfx"`},
+		{q{DynamicIndexBufferHandle}, q{createDynamicIndexBuffer}, q{const(bgfx.fakeenum.Memory)* mem, ushort flags=Buffer.none}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Update dynamic index buffer.
@@ -2248,7 +2258,7 @@ mixin(joinFnBinds((){
 			startIndex = Start index.
 			mem = Index buffer data.
 		*/
-		{q{void}, q{update}, q{DynamicIndexBufferHandle handle, uint startIndex, const(Memory)* mem}, ext: `C++, "bgfx"`},
+		{q{void}, q{update}, q{DynamicIndexBufferHandle handle, uint startIndex, const(bgfx.fakeenum.Memory)* mem}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Destroy dynamic index buffer.
@@ -2295,7 +2305,7 @@ mixin(joinFnBinds((){
 		  - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on
 		      index buffers.
 		*/
-		{q{DynamicVertexBufferHandle}, q{createDynamicVertexBuffer}, q{const(Memory)* mem, ref const VertexLayout layout, ushort flags=Buffer.none}, ext: `C++, "bgfx"`},
+		{q{DynamicVertexBufferHandle}, q{createDynamicVertexBuffer}, q{const(bgfx.fakeenum.Memory)* mem, ref const VertexLayout layout, ushort flags=Buffer.none}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Update dynamic vertex buffer.
@@ -2304,7 +2314,7 @@ mixin(joinFnBinds((){
 			startVertex = Start vertex.
 			mem = Vertex buffer data.
 		*/
-		{q{void}, q{update}, q{DynamicVertexBufferHandle handle, uint startVertex, const(Memory)* mem}, ext: `C++, "bgfx"`},
+		{q{void}, q{update}, q{DynamicVertexBufferHandle handle, uint startVertex, const(bgfx.fakeenum.Memory)* mem}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Destroy dynamic vertex buffer.
@@ -2409,7 +2419,7 @@ mixin(joinFnBinds((){
 		Params:
 			mem = Shader binary.
 		*/
-		{q{ShaderHandle}, q{createShader}, q{const(Memory)* mem}, ext: `C++, "bgfx"`},
+		{q{ShaderHandle}, q{createShader}, q{const(bgfx.fakeenum.Memory)* mem}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Returns the number of uniforms and uniform handles used inside a shader.
@@ -2511,7 +2521,7 @@ mixin(joinFnBinds((){
 			skip = Skip top level mips when parsing texture.
 			info = When non-`NULL` is specified it returns parsed texture information.
 		*/
-		{q{TextureHandle}, q{createTexture}, q{const(Memory)* mem, c_uint64 flags, ubyte skip=0, TextureInfo* info=null}, ext: `C++, "bgfx"`},
+		{q{TextureHandle}, q{createTexture}, q{const(bgfx.fakeenum.Memory)* mem, c_uint64 flags, ubyte skip=0, TextureInfo* info=null}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create 2D texture.
@@ -2532,7 +2542,7 @@ mixin(joinFnBinds((){
 		`_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 		1, expected memory layout is texture and all mips together for each array element.
 		*/
-		{q{TextureHandle}, q{createTexture2D}, q{ushort width, ushort height, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags, const(Memory)* mem=null}, ext: `C++, "bgfx"`},
+		{q{TextureHandle}, q{createTexture2D}, q{ushort width, ushort height, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags, const(bgfx.fakeenum.Memory)* mem=null}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create texture with size based on back-buffer ratio. Texture will maintain ratio
@@ -2570,7 +2580,7 @@ mixin(joinFnBinds((){
 		`_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 		1, expected memory layout is texture and all mips together for each array element.
 		*/
-		{q{TextureHandle}, q{createTexture3D}, q{ushort width, ushort height, ushort depth, bool hasMIPs, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(Memory)* mem=null}, ext: `C++, "bgfx"`},
+		{q{TextureHandle}, q{createTexture3D}, q{ushort width, ushort height, ushort depth, bool hasMIPs, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(bgfx.fakeenum.Memory)* mem=null}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Create Cube texture.
@@ -2590,7 +2600,7 @@ mixin(joinFnBinds((){
 		`_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 		1, expected memory layout is texture and all mips together for each array element.
 		*/
-		{q{TextureHandle}, q{createTextureCube}, q{ushort size, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(Memory)* mem=null}, ext: `C++, "bgfx"`},
+		{q{TextureHandle}, q{createTextureCube}, q{ushort size, bool hasMIPs, ushort numLayers, bgfx.fakeenum.TextureFormat.Enum format, c_uint64 flags=Texture.none|Sampler.none, const(bgfx.fakeenum.Memory)* mem=null}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Update 2D texture.
@@ -2607,7 +2617,7 @@ mixin(joinFnBinds((){
 			pitch = Pitch of input image (bytes). When _pitch is set to
 		UINT16_MAX, it will be calculated internally based on _width.
 		*/
-		{q{void}, q{updateTexture2D}, q{TextureHandle handle, ushort layer, ubyte mip, ushort x, ushort y, ushort width, ushort height, const(Memory)* mem, ushort pitch=ushort.max}, ext: `C++, "bgfx"`},
+		{q{void}, q{updateTexture2D}, q{TextureHandle handle, ushort layer, ubyte mip, ushort x, ushort y, ushort width, ushort height, const(bgfx.fakeenum.Memory)* mem, ushort pitch=ushort.max}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Update 3D texture.
@@ -2623,7 +2633,7 @@ mixin(joinFnBinds((){
 			depth = Depth of texture block.
 			mem = Texture update data.
 		*/
-		{q{void}, q{updateTexture3D}, q{TextureHandle handle, ubyte mip, ushort x, ushort y, ushort z, ushort width, ushort height, ushort depth, const(Memory)* mem}, ext: `C++, "bgfx"`},
+		{q{void}, q{updateTexture3D}, q{TextureHandle handle, ubyte mip, ushort x, ushort y, ushort z, ushort width, ushort height, ushort depth, const(bgfx.fakeenum.Memory)* mem}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Update Cube texture.
@@ -2658,7 +2668,7 @@ mixin(joinFnBinds((){
 			pitch = Pitch of input image (bytes). When _pitch is set to
 		UINT16_MAX, it will be calculated internally based on _width.
 		*/
-		{q{void}, q{updateTextureCube}, q{TextureHandle handle, ushort layer, ubyte side, ubyte mip, ushort x, ushort y, ushort width, ushort height, const(Memory)* mem, ushort pitch=ushort.max}, ext: `C++, "bgfx"`},
+		{q{void}, q{updateTextureCube}, q{TextureHandle handle, ushort layer, ubyte side, ubyte mip, ushort x, ushort y, ushort width, ushort height, const(bgfx.fakeenum.Memory)* mem, ushort pitch=ushort.max}, ext: `C++, "bgfx"`},
 		
 		/**
 		* Read back texture content.
@@ -3582,7 +3592,7 @@ static if(!staticBinding):
 import bindbc.loader;
 
 debug{
-	mixin(makeDynloadFns("Bgfx", makeLibPaths(["bgfx-shared-libDebug", "bgfxDebug", "bgfx"]), [__MODULE__]));
+	mixin(makeDynloadFns("Bgfx", makeLibPaths(["bgfx-shared-libDebug", "bgfxDebug", "bgfx"]), [__MODULE__, "bgfx.fakeenum"]));
 }else{
-	mixin(makeDynloadFns("Bgfx", makeLibPaths(["bgfx-shared-libRelease", "bgfxRelease", "bgfx"]), [__MODULE__]));
+	mixin(makeDynloadFns("Bgfx", makeLibPaths(["bgfx-shared-libRelease", "bgfxRelease", "bgfx"]), [__MODULE__, "bgfx.fakeenum"]));
 }

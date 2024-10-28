@@ -5,7 +5,11 @@
 +/
 module bgfx.fakeenum;
 
-//NOTE: Do NOT use this module! Use the enums with the same names in `bgfx/package.d` instead.
+import bindbc.bgfx.config;
+
+import bgfx;
+
+//NOTE: Do NOT use this module! Use the enums & functions with the same names in `bgfx/package.d` instead.
 package:
 extern(C++, "bgfx") package final abstract class Fatal{
 	enum Enum{
@@ -82,3 +86,16 @@ extern(C++, "bgfx") package final abstract class RenderFrame{
 		noContext,render,timeout,exiting,count
 	}
 }
+
+extern(C++, "bgfx") struct Memory{
+	ubyte* data; uint size;
+}
+
+mixin(joinFnBinds((){
+	FnBind[] ret = [
+		{q{const(bgfx.fakeenum.Memory)*}, q{alloc}, q{uint size}, ext: `C++, "bgfx"`},
+		{q{const(bgfx.fakeenum.Memory)*}, q{copy}, q{const(void)* data, uint size}, ext: `C++, "bgfx"`},
+		{q{const(bgfx.fakeenum.Memory)*}, q{makeRef}, q{const(void)* data, uint size, ReleaseFn releaseFn=null, void* userData=null}, ext: `C++, "bgfx"`},
+	];
+	return ret;
+}()));
