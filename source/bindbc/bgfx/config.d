@@ -12,7 +12,7 @@ enum staticBinding = (){
 	else return false;
 }();
 
-public import bindbc.common.versions;
+public import bindbc.common.versions: Version;
 import bindbc.common.codegen;
 
 mixin(makeFnBindFns(staticBinding, Version(1,0,0)));
